@@ -4,6 +4,48 @@ let selectedSeats = new Set();
 let SEAT_PRICE = 7;  //7$ l price la el seat
 //movie comments
 window.movieComments = {};
+
+function setAuthTab(tab) {
+    let isLogin = tab !== "signup";
+
+    $('[data-tab]').each(function () {
+        let isActive = $(this).data('tab') === tab;
+        $(this)
+            .toggleClass('is-active', isActive)
+            .attr('aria-selected', isActive ? 'true' : 'false');
+    });
+
+    $('#loginPanel').toggle(isLogin);
+    $('#signupPanel').toggle(!isLogin);
+    $('#loginError, #signupError, #loginSuccess, #signupSuccess').text('');
+}
+
+function openAuthModal(tab = "login") {
+    setAuthTab(tab);
+    $('html, body').addClass('login-open');
+    $('.login')
+        .stop(true, true)
+        .attr('aria-hidden', 'false')
+        .fadeIn(240, function () {
+            let $firstInput = tab === 'signup'
+                ? $('#signupPanel input:visible').first()
+                : $('#loginPanel input:visible').first();
+
+            if ($firstInput.length) {
+                $firstInput.trigger('focus');
+            }
+        });
+}
+
+function closeAuthModal() {
+    $('html, body').removeClass('login-open');
+    $('.login')
+        .stop(true, true)
+        .fadeOut(240, function () {
+            $(this).attr('aria-hidden', 'true');
+        });
+}
+
 $(function () {
     window.movieComments = window.movieComments || {};
     // comments lal movies in bookings
@@ -219,8 +261,6 @@ $(function () {
     });
 
     $(document).ready(function () {
-        $('.login').hide();
-
         // Initialize auth state from server
         if (window.authUser) {
             currentUser = window.authUser.username;
@@ -230,26 +270,28 @@ $(function () {
             sessionStorage.removeItem('loggedInUser');
         }
 
-        // Tab switching
-        $(document).on('click', '.auth-tab', function () {
-            let tab = $(this).data('tab');
-            $('.auth-tab').removeClass('active');
-            $(this).addClass('active');
+        if (window.loginModalShouldOpen) {
+            openAuthModal('login');
+            window.loginModalShouldOpen = false;
+        }
 
-            if (tab === 'login') {
-                $('#loginPanel').show();
-                $('#signupPanel').hide();
-            } else {
-                $('#loginPanel').hide();
-                $('#signupPanel').show();
-            }
-            // Clear errors/success on tab switch
-            $('#loginError, #signupError, #loginSuccess, #signupSuccess').text('');
+        // Tab switching
+        $(document).on('click', '[data-tab]', function () {
+            let tab = $(this).data('tab');
+            setAuthTab(tab);
         });
 
         // Login toggle button click
-        $('#loginToggleBtn').click(function (e) {
+        $(document).on('click', '.login-toggle-btn', function (e) {
             e.preventDefault();
+            let headerDrawer = document.getElementById('headerDrawer');
+            if (headerDrawer && typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
+                let drawerInstance = bootstrap.Offcanvas.getInstance(headerDrawer);
+                if (drawerInstance) {
+                    drawerInstance.hide();
+                }
+            }
+
             if (window.authUser) {
                 if (window.authUser.role==='admin'){
                     window.location.href='/admin';
@@ -258,14 +300,33 @@ $(function () {
                     window.location.href = '/profile';
                     }
             } else {
-                $('.login').fadeIn(300);
+                openAuthModal('login');
             }
+        });
+
+        $(document).on('show.bs.offcanvas', '#headerDrawer', function () {
+            $('html, body').addClass('header-drawer-open');
+        });
+
+        $(document).on('hidden.bs.offcanvas', '#headerDrawer', function () {
+            $('html, body').removeClass('header-drawer-open');
+        });
+
+        $(document).on('click', '[data-login-close]', function (e) {
+            e.preventDefault();
+            closeAuthModal();
         });
 
         // Close modal on background click
         $('.login-background').click(function (e) {
             if (e.target === this) {
-                $('.login').fadeOut(300);
+                closeAuthModal();
+            }
+        });
+
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape' && $('.login').is(':visible')) {
+                closeAuthModal();
             }
         });
 
@@ -313,7 +374,7 @@ $(function () {
                         updateLoginStatus();
 
                         setTimeout(function () {
-                            $('.login').fadeOut(300);
+                            closeAuthModal();
                             $('#loginUsername').val('');
                             $('#loginPassword').val('');
                             $('#loginSuccess').text('');
@@ -396,7 +457,7 @@ $(function () {
                         updateLoginStatus();
 
                         setTimeout(function () {
-                            $('.login').fadeOut(300);
+                            closeAuthModal();
                             $('#signupUsername, #signupEmail, #signupPassword, #signupPasswordConfirm').val('');
                             $('#signupSuccess').text('');
                             location.reload();
@@ -426,14 +487,14 @@ $(function () {
     });
 
     function updateLoginStatus() {
-        let $loginToggleBtn = $('#loginToggleBtn');
+        let $loginToggleBtns = $('.login-toggle-btn');
 
         if (window.authUser) {
-            $loginToggleBtn.html(`<i class="fas fa-user"></i> ${window.authUser.username}`);
-            $loginToggleBtn.addClass('logged-in');
+            $loginToggleBtns.html(`<i class="fas fa-user me-1"></i><span>${window.authUser.username}</span>`);
+            $loginToggleBtns.addClass('logged-in');
         } else {
-            $loginToggleBtn.html('<i class="fas fa-user"></i> Login');
-            $loginToggleBtn.removeClass('logged-in');
+            $loginToggleBtns.html('<i class="fas fa-user me-1"></i><span>Login</span>');
+            $loginToggleBtns.removeClass('logged-in');
         }
     }
 
@@ -443,7 +504,7 @@ $(function () {
         e.preventDefault();
         e.stopPropagation();
 
-        $('.login').fadeIn();
+        openAuthModal('login');
 
         showMessage("Please login to add movies to your watchlist!", 'info');
     });
@@ -550,7 +611,7 @@ $("#confirmbtn").on("click", function () {
                     You need to log in to confirm your booking.
                 </p>
                 <button id="loginFromBookingBtn" style="
-                    background: linear-gradient(135deg, rgba(122, 21, 97, 0.678), var(--accent));
+                    background: linear-gradient(135deg, var(--accent), var(--accent-2));
                     color: white;
                     border: none;
                     padding: 10px 20px;
@@ -566,7 +627,7 @@ $("#confirmbtn").on("click", function () {
 
         setTimeout(() => {
             $("#loginFromBookingBtn").on("click", function () {
-                $('.login').fadeIn();
+                openAuthModal('login');
             });
         }, 100);
 
@@ -712,9 +773,3 @@ $("#confirmbtn").on("click", function () {
         }, 10000);
     }, 3000); // Simulate processing delay
 });
-$(".showShowTimes-btn").on("click", function () {
-    let card = e.target.closest(".movie-card");
-    openMovieModal(card);
-}
-)
-

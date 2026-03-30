@@ -2,94 +2,114 @@
 
 @section('title', 'Movie Games | ReelTime')
 
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/trivia.css') }}">
-@endpush
+@section('body-class')
+trivia-page
+@endsection
 
 @push('scripts')
 <script src="{{ asset('js/trivia.js') }}" defer></script>
 @endpush
 
 @section('content')
-<main class="trivia-main">
-    <div class="games-hero">
-      <h1>Movie Games & Trivia</h1>
-      <p>Test your movie knowledge and have fun!</p>
+<main class="page-shell trivia-main">
+  <section class="surface-card games-hero">
+    <div class="hero-copy">
+      <span class="eyebrow">Movie Games</span>
+      <h1>Test your movie memory and keep the night going.</h1>
+      <p>Play through quick game modes, stack points, and climb the leaderboard without leaving the ReelTime flow.</p>
     </div>
 
-    <!-- Login Required Message  -->
-    <div id="loginRequired" class="login-required" style="display: none;">
-      <div class="notlogin">
-        <div class="empty-icon"><i class="fas fa-gamepad style #8a2be2" ></i></div>
-        <h3>Please Log In</h3>
-        <p>You need to be logged in to play movie games and track your scores.</p>
-        <a href="{{ route('home') }}" style="color: #8a2be2; text-decoration: none; font-weight: bold;">Go to Login <i class="fas fa-arrow-right #8a2be2"></i></a>
-      </div>
+    <div class="hero-notes">
+      <article class="note-card">
+        <span>01</span>
+        <h3>Emoji challenge</h3>
+        <p>Guess the movie from a tiny clue.</p>
+      </article>
+      <article class="note-card">
+        <span>02</span>
+        <h3>Quote mode</h3>
+        <p>Match famous lines to the right film.</p>
+      </article>
+      <article class="note-card">
+        <span>03</span>
+        <h3>Leaderboard</h3>
+        <p>See who is keeping score across the app.</p>
+      </article>
     </div>
+  </section>
 
-    <!-- Games Grid  -->
-    <div id="gamesContainer" class="games-container" style="display: none;">
-      <div class="games-grid">
-        <!-- Game 1: Emojis -->
-        <div class="game-card" data-game="guess">
-          <div class="game-icon"><i class="fas fa-theater-masks" style="color: #ffd700;"></i></div>
-          <h3>Emoji Challenge</h3>
-          <p>Guess movies from emoji combinations</p>
-          <button class="play-btn" onclick="startGuessGame()">Play Now</button>
-        </div>
-
-        <!-- Game 2: Characters -->
-        <div class="game-card" data-game="character">
-          <div class="game-icon"><i class="fas fa-users" style="color:#4285f4 ;"></i></div>
-          <h3>Character Match</h3>
-          <p>Match characters to their movies</p>
-          <button class="play-btn" onclick="startCharacterGame()">Play Now</button>
-        </div>
-
-        <!-- Game 3: Quotes -->
-        <div class="game-card" data-game="quotes">
-          <div class="game-icon"><i class="fas fa-quote-right" style="color: #34a853 ;"></i></div>
-          <h3>Movie Quotes</h3>
-          <p>Identify movies from famous quotes</p>
-          <button class="play-btn" onclick="startQuotesGame()">Play Now</button>
-        </div>
-
-        <!-- Game 4: Scenes -->
-        <div class="game-card" data-game="scenes">
-          <div class="game-icon"><i class="fas fa-film #ea4335"></i></div>
-          <h3>Movie Scenes</h3>
-          <p>Guess movies from scene descriptions</p>
-          <button class="play-btn" onclick="startScenesGame()">Play Now</button>
-        </div>
-
-        <!-- Game 5: Coming Soon -->
-<div class="game-card" data-game="coming-soon">
-  <div class="game-icon"><i class="fas fa-rocket " style="color: #ff6b35;" ></i></div>
-  <h3>More Games</h3>
-  <p>Exciting new games are in development. Stay tuned!</p>
-  <button class="play-btn" disabled>Coming Soon</button>
-</div>
-      </div>
-
-      <!-- Leaderboard Section -->
-      <div class="leaderboard-section">
-        <h2>Top Players</h2>
-        <div class="leaderboard" id="leaderboard">
-          <!-- Dynamic content from JS -->
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- Game Modals -->
-  <div id="triviaModal" class="game-modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeGame()">&times;</span>
-      <div id="game-content">
-        <!-- Dynamic game content -->
-      </div>
+  <div id="loginRequired" class="surface-card login-required" style="display: none;">
+    <div class="notlogin">
+      <div class="empty-icon"><i class="fas fa-gamepad" aria-hidden="true"></i></div>
+      <h3>Please log in</h3>
+      <p>You need to be signed in to play games and keep your score on the leaderboard.</p>
+      <a href="{{ route('home') }}" class="button button-secondary">Go to login</a>
     </div>
   </div>
+
+  <div id="gamesContainer" class="games-container" style="display: none;">
+    <section class="games-grid">
+      <article class="game-card" data-game="guess">
+        <div class="game-icon">
+          <i class="fas fa-theater-masks" aria-hidden="true"></i>
+        </div>
+        <h3>Emoji challenge</h3>
+        <p>Guess movies from emoji combinations.</p>
+        <button class="play-btn" type="button" onclick="startGuessGame()">Play now</button>
+      </article>
+
+      <article class="game-card" data-game="character">
+        <div class="game-icon">
+          <i class="fas fa-users" aria-hidden="true"></i>
+        </div>
+        <h3>Character match</h3>
+        <p>Match characters to their movies.</p>
+        <button class="play-btn" type="button" onclick="startCharacterGame()">Play now</button>
+      </article>
+
+      <article class="game-card" data-game="quotes">
+        <div class="game-icon">
+          <i class="fas fa-quote-right" aria-hidden="true"></i>
+        </div>
+        <h3>Movie quotes</h3>
+        <p>Identify movies from famous lines.</p>
+        <button class="play-btn" type="button" onclick="startQuotesGame()">Play now</button>
+      </article>
+
+      <article class="game-card" data-game="scenes">
+        <div class="game-icon">
+          <i class="fas fa-film" aria-hidden="true"></i>
+        </div>
+        <h3>Movie scenes</h3>
+        <p>Guess movies from scene descriptions.</p>
+        <button class="play-btn" type="button" onclick="startScenesGame()">Play now</button>
+      </article>
+
+      <article class="game-card" data-game="coming-soon">
+        <div class="game-icon">
+          <i class="fas fa-rocket" aria-hidden="true"></i>
+        </div>
+        <h3>More games</h3>
+        <p>New game modes are on the way.</p>
+        <button class="play-btn" type="button" disabled>Coming soon</button>
+      </article>
+    </section>
+
+    <section class="surface-card leaderboard-section">
+      <div class="section-header">
+        <span class="eyebrow">Leaderboard</span>
+        <h2>Top players</h2>
+        <p>Scores stack across game sessions, so the best regulars stay visible.</p>
+      </div>
+      <div class="leaderboard" id="leaderboard"></div>
+    </section>
+  </div>
 </main>
+
+<div id="triviaModal" class="game-modal">
+  <div class="modal-content surface-card">
+    <span class="close-btn" onclick="closeGame()">&times;</span>
+    <div id="game-content"></div>
+  </div>
+</div>
 @endsection
-</html>

@@ -36,7 +36,7 @@ $(document).ready(function () {
                 <div class="empty-icon"><i class="fas fa-film"></i></div>
                 <h3>Please Log In</h3>
                 <p>You need to be logged in to view your profile and ratings.</p>
-                <a href="#" id="profileLoginBtn" style="color: #8a2be2; text-decoration: none; font-weight: bold;">Go to Login <i class="fas fa-arrow-right"></i></a>
+                <a href="#" id="profileLoginBtn" class="accent-link">Go to Login <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
     `);
@@ -58,11 +58,11 @@ $(document).ready(function () {
                 </div>
                 <div class="profile-info-modern">
                     <h1>${user.username}</h1>
-                    <p style="color: #ccc; margin-bottom: 15px;">${user.email}</p>
-                    <p style="color: #ccc; margin-bottom: 15px;">${user.id}</p>
+                    <p class="profile-meta">${user.email}</p>
+                    <p class="profile-meta">${user.id}</p>
                     <div class="profile-stats">
                         <div class="stat-item">
-                            <span class="stat-number" id="watchlist-count"> ${window.watchlistCount}</span>
+                            <span class="stat-number" id="watchlist-count">0</span>
                             <span class="stat-label">In Watchlist</span>
                         </div>
                         <div class="stat-item">
@@ -89,7 +89,7 @@ $(document).ready(function () {
             <div class="watchlist-section">
                 <div class="section-header">
                     <div class="section-title">My Watchlist</div>
-                    <div class="watchlist-count" id="watchlist-counter">c</div>
+                    <div class="watchlist-count" id="watchlist-counter">0 movies</div>
                 </div>
                 <div class="watchlist-grid-modern" id="modern-watchlist">
                     <div class="loading-watchlist">Loading watchlist...</div>
@@ -153,53 +153,60 @@ $(document).ready(function () {
 
 
     //this function load the movies in watch list and its rating if it has
-  
-function loadWatchlist(user) {
-    let $modernWatchlist = $('#modern-watchlist');
-    $modernWatchlist.html('<div class="loading-watchlist">Loading watchlist...</div>');
-
-    $.ajax({
-        url: '/profile/watchlist',
-        method: 'GET',
-        success: function(watchlist) {
-            let count = watchlist.length;
-            $('#watchlist-count').text(count);
-            $('#watchlist-counter').text(count + ' movie' + (count !== 1 ? 's' : ''));
-
-            if (count === 0) {
-                $modernWatchlist.html(`
-                    <div class="empty-watchlist">
-                        <h3>Your Watchlist is Empty</h3>
-                        <a href="/search">Browse Movies</a>
-                    </div>
-                `);
-                return;
-            }
-
-            const watchlistHTML = watchlist.map(movie => {
-                let poster = movie.poster ? '/storage/' + movie.poster : '../../imgs/default-movie.jpg';
-                return `
-                    <div class="watchlist-card-modern" data-movie-id="${movie.movie_id}">
-                        <img src="${poster}" alt="${movie.title}" class="card-image">
-                        <div class="card-content">
-                            <h3 class="card-title">${movie.title}</h3>
-                            <div class="card-rating"><i class="fas fa-star"></i> ${movie.rating}/5</div>
-                            <div class="card-actions">
-                                <button class="btn-rate-large" data-movie-id="${movie.movie_id}" data-movie-title="${movie.title}">Rate</button>
-                                <button class="btn-remove" data-movie-id="${movie.movie_id}" data-movie-title="${movie.title}">Remove</button>
-                            </div>
+    function loadWatchlist(user) {
+        let saved = JSON.parse(localStorage.getItem('watchlist')) || [];
+        let userWatchlist = saved.filter(movie => movie.username === user.username);
+        $('#watchlist-count').text(userWatchlist.length);
+        $('#watchlist-counter').text(userWatchlist.length + ' movie' + (userWatchlist.length !== 1 ? 's' : ''));
+        let $modernWatchlist = $('#modern-watchlist');
+        if (userWatchlist.length === 0) {
+            $modernWatchlist.html(`
+                <div class="empty-watchlist" style="grid-column: 1 / -1;">
+                    <h3>Your Watchlist is Empty</h3>
+                    <p>Start adding movies to build your personalized collection!</p>
+                    <a href="/search" class="accent-link">Browse Movies <i class="fas fa-arrow-right"></i></a>
+                </div>
+            `);
+            return;
+        }
+        // Get user ratings
+        let savedRatings = {};
+        savedRatings = JSON.parse(localStorage.getItem('movieRatings')) || {};
+        const userRatings = savedRatings[user.username] || {};
+        const watchlistHTML = userWatchlist.map(movie => {
+            const isRated = userRatings[movie.title];
+            const safeImage = movie.image || '../../imgs/default-movie.jpg';
+            return `
+                <div class="watchlist-card-modern">
+                    <img src="${safeImage}" alt="${movie.title}" class="card-image" onerror="this.src='../../imgs/default-movie.jpg'">
+                    ${isRated ? `<div class="rated-badge">Rated ${userRatings[movie.title].rating}/5 <i class="fas fa-star"></i></div>` : ''}
+                    <div class="card-content">
+                        <h3 class="card-title">${movie.title}</h3>
+                        <div class="card-rating"><i class="fas fa-star"></i> ${movie.rating}/5</div>
+                        <div class="card-actions">
+                            <button class="btn-rate-large" data-title="${movie.title}">
+                                ${isRated ? 'Update' : 'Rate'}
+                            </button>
+                            <button class="btn-remove" data-title="${movie.title}">
+                                Remove
+                            </button>
                         </div>
                     </div>
-                `;
-            }).join('');
-            
-            $modernWatchlist.html(watchlistHTML);
-        },
-        error: function() {
-            $modernWatchlist.html('<div class="error-state">Error loading watchlist</div>');
-        }
-    });
-}
+                </div>
+            `;
+        }).join('');
+        $modernWatchlist.html(watchlistHTML);
+        // Add event handlers
+        $modernWatchlist.off('click', '.btn-rate-large').on('click', '.btn-rate-large', function () {
+            const title = $(this).data('title');
+            const currentRating = userRatings[title] ? userRatings[title].rating : 0;
+            openLargeRatingModal(title, currentRating);
+        });
+        $modernWatchlist.off('click', '.btn-remove').on('click', '.btn-remove', function () {
+            const title = $(this).data('title');
+            removeFromWatchlist(title);
+        });
+    }
     
 
 
@@ -299,7 +306,7 @@ function loadWatchlist(user) {
                     <div class="empty-icon"><i class="fas fa-ticket-alt"></i></div>
                     <h3>No Bookings Yet</h3>
                     <p>Book a movie from the bookings page and it will appear here.</p>
-                    <a href="/bookings" style="color: #8a2be2; text-decoration: none; font-weight: bold;">Book a Movie <i class="fas fa-arrow-right"></i></a>
+                    <a href="/bookings" class="accent-link">Book a Movie <i class="fas fa-arrow-right"></i></a>
                 </div>
             `);
             return;
@@ -489,7 +496,7 @@ function loadWatchlist(user) {
         <div class="booking-modal-overlay" id="cancelBookingModal">
             <div class="booking-modal-large">
                 <div class="booking-modal-header">
-                    <h3 style="color: #8a2be2">Cancel this booking?</h3>
+                    <h3 class="booking-cancel-title">Cancel this booking?</h3>
                     <button class="modal-close-btn" id="closeCancelBookingModal">×</button>
                 </div>
                 <div class="booking-details-content">
@@ -899,7 +906,7 @@ function loadWatchlist(user) {
                     position: fixed;
                     bottom: 20px;
                     right: 20px;
-                    background: linear-gradient(135deg, rgba(122, 21, 97, 0.678), var(--accent));
+                    background: var(--accent-gradient);
                     color: white;
                     padding: 12px 20px;
                     border-radius: 8px;
@@ -914,10 +921,10 @@ function loadWatchlist(user) {
                     transform: translateX(0);
                 }
                 .toast-rated {
-                    background: linear-gradient(135deg, rgba(122, 21, 97, 0.678), var(--accent));
+                    background: var(--accent-gradient);
                 }
                 .toast-removed {
-                    background: linear-gradient(135deg, rgba(122, 21, 97, 0.678), var(--accent));
+                    background: var(--accent-gradient);
                 }
                 
                 /* Loading states */
@@ -942,7 +949,7 @@ function loadWatchlist(user) {
                 }
                 
                 .retry-btn {
-                    background: var(--accent-purple);
+                    background: var(--accent-gradient);
                     color: white;
                     border: none;
                     padding: 10px 20px;

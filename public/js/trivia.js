@@ -202,6 +202,9 @@ let gameData = {
 function initializeGames() {
     // Check login 
     let userData = sessionStorage.getItem('loggedInUser');
+    if (!userData && window.authUser) {
+        userData = JSON.stringify(window.authUser);
+    }
 
     if (userData) {
         // User is logged in - show games
@@ -242,7 +245,7 @@ function startGame() {
     score = 0;
     
     // Get player name
-    let userData = JSON.parse(sessionStorage.getItem('loggedInUser'));
+    let userData = window.authUser || JSON.parse(sessionStorage.getItem('loggedInUser'));
     playerName = userData.username;
     // Shuffle questions for this game
     gameData[currentGame] = shuffleArray([...gameData[currentGame]]);
@@ -447,7 +450,7 @@ function closeGame() {
 }
 
 function goToMovies() {
-    window.location.href = "../../index.html";
+    window.location.href = window.routes?.home || "/";
 }
 
 function saveToLeaderboard(score) {

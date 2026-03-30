@@ -2,43 +2,26 @@
 
 @section('title', 'Your Profile | ReelTime')
 
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/profile.css') }}">
-@endpush
+@section('body-class')
+profile-page
+@endsection
 
 @push('scripts')
 <script>
+    window.authUser = @json([
+        'id' => $user->user_id,
+        'username' => $user->username,
+        'email' => $user->email,
+        'img' => $user->profile_image ?? ('https://robohash.org/' . urlencode($user->username)),
+        'since' => optional($user->member_since ?? $user->created_at)->year,
+        'role' => $user->role,
+    ]);
     window.watchlistCount = {{ $watchlist->count() }};
-    
-   
 </script>
 <script src="{{ asset('js/profile.js') }}" defer></script>
 <script src="{{ asset('js/watchlist.js') }}" defer></script>
 @endpush
 
 @section('content')
-<div class="Profile-container">
-    
-</div>
-
-<main>
-    <div id="watchlist-container" class="gallery"></div>
-    
-    <div class="rated-section">
-        <div class="section-header">
-            <div class="section-title">My Rated Movies</div>
-            <div class="watchlist-count" id="rated-counter">0 movies rated</div>
-        </div>
-        <div class="rated" id="rated"></div>
-    </div>
-    
-    <div class="booked-section">
-      <div class="section-header">
-        <div class="section-title">My Booked Movies</div>
-        <div class="watchlist-count" id="booked-counter">0 bookings</div>
-      </div>
-      <div class="booked-grid-modern" id="booked-grid"></div>
-    </div>
-
-</main>
+<main class="profile-page"></main>
 @endsection
