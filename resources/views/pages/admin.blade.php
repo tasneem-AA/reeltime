@@ -6,6 +6,10 @@
 admin-page
 @endsection
 
+@push('scripts')
+<script src="{{ asset('js/admin.js') }}" defer></script>
+@endpush
+
 @section('content')
 @php($adminAvatar = Illuminate\Support\Str::startsWith($user->profile_image, ['http://', 'https://']) ? $user->profile_image : asset($user->profile_image))
 <main class="page-shell admin-shell">
@@ -135,7 +139,7 @@ admin-page
                       <button type="button" class="button button-secondary admin-icon-btn" aria-label="Edit movie">
                         <i class="fas fa-edit" aria-hidden="true"></i>
                       </button>
-                      <button type="button" class="button button-secondary admin-icon-btn admin-icon-btn-danger" aria-label="Delete movie">
+                      <button type="button" class="button button-secondary admin-icon-btn admin-icon-btn-danger delete-btn" data-url="{{route('admin.movies.destroy',$movie->movie_id)}}" aria-label="Delete movie">
                         <i class="fas fa-trash" aria-hidden="true"></i>
                       </button>
                     </div>
@@ -187,7 +191,7 @@ admin-page
                       <button type="button" class="button button-secondary admin-icon-btn" aria-label="Edit game">
                         <i class="fas fa-edit" aria-hidden="true"></i>
                       </button>
-                      <button type="button" class="button button-secondary admin-icon-btn admin-icon-btn-danger" aria-label="Delete game">
+                      <button type="button" class="button button-secondary admin-icon-btn admin-icon-btn-danger delete-btn" data-url="{{ route('admin.games.destroy', $game->game_id) }}" aria-label="Delete game">
                         <i class="fas fa-trash" aria-hidden="true"></i>
                       </button>
                     </div>
@@ -244,7 +248,7 @@ admin-page
                       <button type="button" class="button button-secondary admin-icon-btn" aria-label="View booking">
                         <i class="fas fa-eye" aria-hidden="true"></i>
                       </button>
-                      <button type="button" class="button button-secondary admin-icon-btn admin-icon-btn-danger" aria-label="Delete booking">
+                      <button type="button" class="button button-secondary admin-icon-btn admin-icon-btn-danger delete-btn" data-url="{{ route('admin.bookings.destroy', $booking->booking_id) }}" aria-label="Delete booking">
                         <i class="fas fa-trash" aria-hidden="true"></i>
                       </button>
                     </div>
@@ -304,7 +308,7 @@ admin-page
                       <button type="button" class="button button-secondary admin-icon-btn" aria-label="Edit user">
                         <i class="fas fa-edit" aria-hidden="true"></i>
                       </button>
-                      <button type="button" class="button button-secondary admin-icon-btn admin-icon-btn-danger" aria-label="Delete user">
+                      <button type="button" class="button button-secondary admin-icon-btn admin-icon-btn-danger delete-btn" data-url="{{ route('admin.users.destroy', $member->user_id) }}" aria-label="Delete user">
                         <i class="fas fa-trash" aria-hidden="true"></i>
                       </button>
                     </div>
@@ -348,7 +352,23 @@ admin-page
     </div>
   </div>
 </div>
-
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" class="admin-modal">
+    <div class="surface-card admin-modal-shell" style="max-width: 400px;">
+        <button type="button" class="modal-close-btn" id="closeDeleteModal" aria-label="Close">
+            <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+        <div class="section-header">
+            <span class="eyebrow">Confirm Delete</span>
+            <h2>Are you sure?</h2>
+            <p>This action cannot be undone.</p>
+        </div>
+        <div class="admin-actions" style="justify-content: flex-end; margin-top: 1rem;">
+            <button class="button button-secondary cancel-delete-btn" id="cancelDeleteBtn">Cancel</button>
+            <button class="button button-primary confirm-delete-btn" id="confirmDeleteBtn">Delete</button>
+        </div>
+    </div>
+</div>
 <script>
   function switchTab(tab) {
     const tabs = ['movies', 'games', 'bookings', 'users'];
