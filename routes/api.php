@@ -30,9 +30,11 @@ Route::get('/games', [GameController::class, 'index']);
 Route::get('/games/{game_id}', [GameController::class, 'show']);
 Route::get('/games/{game_id}/questions', [GameController::class, 'questions']);
 
+Route::get('/game-rounds/leaderboard', [GameRoundController::class, 'leaderboard']);
+
 Route::get('/hero-banners', [HeroBannerController::class, 'index']);
     
-Route::middleware('auth:sanctum')->group(function () {  
+Route::middleware('web')->group(function () {  
     Route::get('/user', [UserController::class, 'profile']);
     Route::put('/user', [UserController::class, 'update']);
     Route::post('/user/logout', [UserController::class, 'logout']);

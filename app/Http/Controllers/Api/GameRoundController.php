@@ -28,17 +28,18 @@ class GameRoundController extends Controller
     {
         $validated = $request->validate([
             'game_id' => 'required|exists:games,game_id',
+            'user_id' => 'required|exists:users,user_id',
+            'score' => 'required|integer|min:0',
         ]);
 
         $gameRound = GameRound::create([
-            'user_id' => $request->user()->user_id,
+            'user_id' => $validated['user_id'],
             'game_id' => $validated['game_id'],
-            'score' => 0,
-            'status' => 'in_progress',
+            'score' => $validated['score'],
         ]);
 
         return response()->json([
-            'message' => 'Game round started',
+            'message' => 'Game round saved',
             'game_round' => $gameRound
         ], 201);
     }
@@ -86,5 +87,33 @@ class GameRoundController extends Controller
             'correct_answer' => $question->answer,
             'current_score' => $gameRound->score
         ]);
+    }
+
+    /**
+     * Get global leaderboard
+     */
+    public function leaderboard()
+    {
+        $leaderboard = GameRound::with(['user'])
+            ->select('user_id')
+            ->selectRaw('SUM(score) as total_score')
+            ->selectRaw('COUNT(*) as games_played')
+            ->selectRaw('MAX(created_at) as last_played')
+            ->groupBy('user_id')
+            ->orderBy('total_score', 'DESC')
+            ->limit(50)
+            ->get()
+            ->map(function ($round, $index) {
+                $user = $round->user;
+                return [
+                    'rank' => $index + 1,
+                    'player_name' => $user ? $user->username : 'Anonymous',
+                    'score' => $round->total_score,
+                    'games_played' => $round->games_played,
+                    'last_played' => $round->last_played // Already a string from raw query
+                ];
+            });
+
+        return response()->json($leaderboard);
     }
 }

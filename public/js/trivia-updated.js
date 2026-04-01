@@ -37,6 +37,7 @@ function initializeGames() {
         $('#gamesContainer').show();
         $('#loginRequired').hide();
         loadAllGames();
+        loadLeaderboard(); // Load leaderboard on page load
     } else {
         $('#loginRequired').show();
         $('#gamesContainer').hide();
@@ -47,9 +48,10 @@ function initializeGames() {
 function loadAllGames() {
     fetch('/api/games')
         .then(response => response.json())
-        .then(games => {
-            allGames = games;
-            console.log('Games loaded:', games);
+        .then(data => {
+            // Handle pagination response
+            allGames = data.data || data;
+            console.log('Games loaded:', allGames);
         })
         .catch(error => console.error('Error loading games:', error));
 }
@@ -80,7 +82,12 @@ function startScenesGame() {
 
 // Get game ID by type
 function getGameIdByType(gameType) {
-    const game = allGames.find(g => g.game_type === gameType);
+    if (!allGames || allGames.length === 0) {
+        console.error('allGames is empty');
+        return null;
+    }
+    const game = allGames.find(g => g.game_type === gameType || g.title.toLowerCase().includes(gameType));
+    console.log(`Looking for game type: ${gameType}, found:`, game);
     return game ? game.game_id : null;
 }
 
@@ -103,7 +110,22 @@ function startGame() {
     fetch(`/api/games/${gameId}/questions`)
         .then(response => response.json())
         .then(data => {
-            gameData[currentGame] = shuffleArray([...data.questions]);
+            let questions = data.questions || data.data || [];
+            
+            // Parse options if they're JSON strings
+            questions = questions.map(q => {
+                if (typeof q.options === 'string') {
+                    try {
+                        q.options = JSON.parse(q.options);
+                    } catch (e) {
+                        console.error('Error parsing options:', q.options);
+                        q.options = [q.options]; // fallback
+                    }
+                }
+                return q;
+            });
+            
+            gameData[currentGame] = shuffleArray([...questions]);
 
             // Shuffle options for each question
             gameData[currentGame] = gameData[currentGame].map(question => {
@@ -315,6 +337,10 @@ function goToMovies() {
 // Save game round to backend
 function saveGameRound(score) {
     const gameId = getGameIdByType(currentGame);
+    const userData = JSON.parse(sessionStorage.getItem('loggedInUser'));
+    const userId = userData.user_id || userData.id;
+
+    console.log('Saving game round with score:', score, 'gameId:', gameId, 'userId:', userId);
 
     fetch('/api/game-rounds', {
         method: 'POST',
@@ -324,24 +350,37 @@ function saveGameRound(score) {
         },
         body: JSON.stringify({
             game_id: gameId,
-            score: score
+            user_id: userId,
+            score: parseInt(score) // Ensure score is an integer
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Save response status:', response.status);
+        return response.json();
+    })
     .then(data => {
         console.log('Game round saved:', data);
-        showToast('Score saved!', 'success');
+        showToast('Score saved! (' + score + ' pts)', 'success');
+        // Wait a moment then refresh leaderboard
+        setTimeout(() => {
+            loadLeaderboard();
+        }, 500);
     })
     .catch(error => {
         console.error('Error saving game round:', error);
+        showToast('Could not save score', 'error');
     });
 }
 
 // Load leaderboard from backend
 function loadLeaderboard() {
-    fetch('/api/leaderboard')
-        .then(response => response.json())
+    fetch('/api/game-rounds/leaderboard')
+        .then(response => {
+            console.log('Leaderboard response status:', response.status);
+            return response.json();
+        })
         .then(leaderboard => {
+            console.log('Leaderboard data:', leaderboard);
             let leaderboardHTML = leaderboard.map((entry, index) => {
                 return `
                     <div class="leaderboard-item">
@@ -356,6 +395,7 @@ function loadLeaderboard() {
         })
         .catch(error => {
             console.error('Error loading leaderboard:', error);
+            $('#leaderboard').html('<p>Error loading leaderboard</p>');
         });
 }
 
