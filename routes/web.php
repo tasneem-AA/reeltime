@@ -30,6 +30,11 @@ Route::get('/trivia', function () {
 // Admin Area
 Route::middleware(['check.admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin');
+    Route::delete('admin/movies/{movie}',[AdminController::class, 'destroyMovie'])->name('admin.movies.destroy');
+    Route::delete('/admin/games/{game}', [AdminController::class, 'destroyGame'])->name('admin.games.destroy');
+    Route::delete('/admin/bookings/{booking}', [AdminController::class, 'destroyBooking'])->name('admin.bookings.destroy');
+    Route::delete('/admin/users/{user}', [AdminController::class, 'destroyUser'])->name('admin.users.destroy');
+
 });
 
 // Protected routes

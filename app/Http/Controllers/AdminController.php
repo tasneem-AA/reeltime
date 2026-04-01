@@ -24,4 +24,23 @@ class AdminController extends Controller
         return view('pages.admin', compact('user','movieCount','movies','gameCount','userCount','users','bookingCount','bookings','games'));
        
     }
+    public function destroyMovie(Movie $movie){
+        $movie->delete();
+        return response()->json(['success'=>true]);
+    }
+    public function destroyGame(Game $game){
+        $game->delete();
+        return response()->json(['success'=>true]);
+    }
+    public function destroyUser(User $user){
+       if ($user->user_id === Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'You cannot delete your own account.'], 403);
+        }
+        $user->delete();
+        return response()->json(['success' => true]);
+    }
+    public function destroyBooking(Booking $booking){
+        $booking->delete();
+        return response()->json(['success'=>true]);
+    }
 }
