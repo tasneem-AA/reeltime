@@ -24,7 +24,8 @@ Route::get('/search', function () {
 })->name('search');
 
 Route::get('/trivia', function () {
-    return view('pages.trivia');
+    $games = \App\Models\Game::all();
+    return view('pages.trivia', compact('games'));
 })->name('trivia');
 
 // Admin Area

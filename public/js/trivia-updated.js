@@ -80,6 +80,12 @@ function startScenesGame() {
     startGame();
 }
 
+// Generic function to start game by type
+function startGameByType(gameType) {
+    currentGame = gameType;
+    startGame();
+}
+
 // Get game ID by type
 function getGameIdByType(gameType) {
     if (!allGames || allGames.length === 0) {
