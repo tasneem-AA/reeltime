@@ -15,8 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'check.auth' => \App\Http\Middleware\CheckAuth::class,
             'check.admin' => \App\Http\Middleware\CheckAdmin::class,
+            'admin' => \App\Http\Middleware\AdminApi::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
+    

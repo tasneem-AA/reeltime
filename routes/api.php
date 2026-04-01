@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\ShowtimeController;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\GameRoundController;
 use App\Http\Controllers\Api\HeroBannerController;
+use App\Http\Controllers\Api\AdminController_Api;
 
 Route::get('/movies', [MovieController::class, 'index']);
 Route::get('/movies/{movie_id}', [MovieController::class, 'show']);
@@ -61,3 +62,6 @@ Route::middleware('web')->group(function () {
     Route::get('/game-rounds/{game_round_id}', [GameRoundController::class, 'show']);
     Route::post('/game-rounds/{game_round_id}/answer', [GameRoundController::class, 'submitAnswer']);
 }); 
+Route::middleware(['web', 'auth', 'admin'])->prefix('admin')->group(function () {
+    Route::post('/movies', [AdminController_Api::class, 'store']);
+});

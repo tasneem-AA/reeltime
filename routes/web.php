@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Models\HeroBanner;
+use App\Http\Controllers\Api\AdminController_Api;
 
 Route::get('/', function () {
     $heroBanners = HeroBanner::orderBy('position')->get();
@@ -54,3 +55,14 @@ Route::middleware(['guest'])->group(function () {
 
 Route::get('/auth/user', [AuthController::class, 'currentUser'])->name('auth.user');
 
+
+Route::prefix('admin-api')->group(function () {
+    Route::post('/movies', [AdminController_Api::class, 'store']);
+});
+Route::middleware(['auth', 'admin'])->prefix('admin-api')->group(function () {
+    Route::post('/movies', [AdminController_Api::class, 'store']);
+});
+
+Route::middleware(['web', 'auth', 'admin'])->prefix('admin-api')->group(function () {
+    Route::post('/movies', [App\Http\Controllers\Api\AdminController_Api::class, 'store']);
+});
