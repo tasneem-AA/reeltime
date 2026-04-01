@@ -7,7 +7,7 @@ trivia-page
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/trivia.js') }}" defer></script>
+<script src="{{ asset('js/trivia-updated.js') }}" defer></script>
 @endpush
 
 @section('content')
