@@ -100,12 +100,7 @@ admin-page
       </button>
     </div>
 
-    <section id="moviesTab" class="admin-tab-pane">
-      <div class="section-header">
-        <span class="eyebrow">Movies</span>
-        <h2>Catalog overview</h2>
-        <p>Review the current movie inventory and keep the poster catalog tidy.</p>
-      </div>
+    
 
       <div class="admin-data-card">
         <div class="admin-table-wrap">
