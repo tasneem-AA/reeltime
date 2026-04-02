@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'Accept': 'application/json'
                 },
-                credentials: 'include' 
+                credentials: 'include'
             })
             .then(res => res.json())
             .then(data => {
@@ -205,20 +205,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     
-    window.openEditMovieModal = function(movieId, title, description, genres, cast, duration, trailerLink, rating, posterUrl) {
+    window.openEditMovieModal = function(movieId, title, description, genres, this_movie_is, cast, duration, trailerLink, rating, posterUrl) {
         document.getElementById('edit_movie_id').value = movieId;
         document.getElementById('edit_title').value = title;
         document.getElementById('edit_description').value = description;
         document.getElementById('edit_genres').value = genres;
+        document.getElementById('edit_this_movie_is').value = this_movie_is;
         document.getElementById('edit_cast').value = cast;
         document.getElementById('edit_duration').value = duration;
         document.getElementById('edit_trailer_link').value = trailerLink || '';
         document.getElementById('edit_rating_slider').value = rating;
         document.getElementById('edit_rating_number').value = rating;
         const previewDiv = document.getElementById('edit_poster_preview');
-        previewDiv.style.display = 'none';
-        document.getElementById('edit_poster_input').value = '';
-        window.currentPosterUrl = posterUrl;
+        if (previewDiv) previewDiv.style.display = 'none';
+        const input = document.getElementById('edit_poster_input');
+        if (input) input.value = '';
         openModal('editMovieModal');
     };
 
@@ -305,5 +306,71 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function initRowClicks() {
+        const tableBody = document.querySelector('.admin-table tbody');
+        if (!tableBody) return;
+
+        tableBody.addEventListener('click', async function(e) {
+            const row = e.target.closest('.movie-row');
+            if (!row) return;
+            if (e.target.closest('.admin-actions')) return;
+
+            const movieId = row.cells[0]?.textContent;
+            if (!movieId) return;
+
+            try {
+                const response = await fetch(`/api/admin-api/movies/${movieId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    const movie = result.data;
+                    // Create a temporary card element with required data attributes
+                    const tempCard = document.createElement('div');
+                    tempCard.classList.add('movie-card');
+                    tempCard.setAttribute('data-title', movie.title);
+                    tempCard.setAttribute('data-description', movie.description);
+                    tempCard.setAttribute('data-cast', movie.cast);
+                    tempCard.setAttribute('data-genres', movie.genres);
+                    tempCard.setAttribute('data-this-movie-is', movie.this_movie_is || 'N/A');
+                    tempCard.setAttribute('data-rating', movie.rating);
+                    tempCard.setAttribute('data-trailer-id', movie.trailer_link || '');
+                    const h3 = document.createElement('h3');
+                    h3.textContent = movie.title;
+                    tempCard.appendChild(h3);
+                    if (typeof window.openMovieModal === 'function') {
+                        window.openMovieModal(tempCard);
+                    } else {
+                        console.error('openMovieModal not available');
+                        showToast('Modal function not available', 'error');
+                    }
+                } else {
+                    showToast('Failed to load movie details', 'error');
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showToast('Could not load movie details', 'error');
+            }
+        });
+    }
+
+    
+    if (typeof window.openMovieModal === 'function') {
+        initRowClicks();
+    } else {
+        window.addEventListener('load', function() {
+            if (typeof window.openMovieModal === 'function') {
+                initRowClicks();
+            } else {
+                console.warn('openMovieModal still not available');
+            }
+        });
+    }
+
+    
     switchTab('movies');
 });

@@ -333,3 +333,4 @@ function repositionModalTitle() {
 // Run once on load w kel ma l window resizes
 window.addEventListener("load", repositionModalTitle);
 window.addEventListener("resize", repositionModalTitle);
+window.openMovieModal = openMovieModal;

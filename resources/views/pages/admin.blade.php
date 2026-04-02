@@ -122,7 +122,16 @@ admin-page
             </thead>
             <tbody>
               @forelse($movies as $movie)
-                <tr>
+                <tr class="movie-row" style="cursor: pointer;"
+                      data-title="{{ addslashes($movie->title) }}"
+                      data-description="{{ addslashes($movie->description) }}"
+                      data-cast="{{ addslashes($movie->cast) }}"
+                      data-genres="{{ addslashes($movie->genres) }}"
+                      data-this-movie-is="{{ addslashes($movie->this_movie_is) }}"
+                      data-trailer-link="{{ $movie->trailer_link }}"
+                      data-rating="{{ $movie->rating }}"
+                      data-duration="{{ $movie->duration }}"
+                      data-poster="{{ asset($movie->poster) }}">
                   <td>{{ $movie->movie_id }}</td>
                   <td>
                     @if($movie->poster)
@@ -142,6 +151,7 @@ admin-page
                               '{{ addslashes($movie->title) }}',
                               '{{ addslashes($movie->description) }}',
                               '{{ addslashes($movie->genres) }}',
+                              '{{ addslashes($movie->this_movie_is) }}',
                               '{{ addslashes($movie->cast) }}',
                               '{{ $movie->duration }}',
                               '{{ $movie->trailer_link }}',
@@ -392,6 +402,16 @@ admin-page
                                style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
                         <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Separate genres with commas</small>
                     </div>
+                     <div>
+    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-color);">
+        <i class="fas fa-face-smile" style="margin-right: 0.5rem; color: var(--accent-3);"></i>
+        This Movie Is (Mood/Tags)
+    </label>
+    <input type="text" name="this_movie_is" 
+           placeholder="e.g., Exciting, Suspenseful, Emotional, Heartwarming"
+           style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+    <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Describe the movie mood (comma separated)</small>
+</div>
                     
                    
                     <div>
@@ -505,6 +525,15 @@ admin-page
                         <textarea id="edit_description" name="description" rows="4" required style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;"></textarea>
                     </div>
                     <div>
+    <label for="edit_this_movie_is" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+        <i class="fas fa-face-smile"></i> This Movie Is (Mood/Tags)
+    </label>
+    <input type="text" id="edit_this_movie_is" name="this_movie_is" 
+           placeholder="e.g., Exciting, Suspenseful, Emotional, Heartwarming"
+           style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+    <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Describe the movie mood (comma separated)</small>
+</div>
+                    <div>
                         <label for="edit_genres" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
                             <i class="fas fa-tags"></i> Genres <span style="color: #ff6b6b;">*</span>
                         </label>
@@ -598,4 +627,41 @@ admin-page
         </div>
     </div>
 </div>
+<!-- Movie Detail Modal (same as homepage) -->
+<div class="modal" id="card-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal__backdrop" data-close-modal></div>
+  <div class="modal__dialog surface-card" role="document">
+    <button class="modal__close" id="modal-close" aria-label="Close dialog" data-close-modal>&times;</button>
+    <div class="modal__media">
+      <div id="trailer-container">
+        <iframe id="modal-trailer" width="100%" height="315" src="" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+      </div>
+      <div id="movieinfo">
+        <p><strong>Cast:</strong> <span id="modal-cast"></span></p>
+        <p><strong>Genres:</strong> <span id="modal-genres"></span></p>
+        <p><strong>This movie is:</strong> <span id="modal-this-movie-is"></span></p>
+      </div>
+    </div>
+    <div class="modal__body">
+      <h3 id="modal-title">movie</h3>
+      <p id="modal-text"></p>
+      <button class="add-watchlist-btn">+ Add to Watchlist</button>
+      <div class="comments-section">
+        <h4>Reviews</h4>
+        <div id="comments-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+    .admin-table tbody tr.movie-row {
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+    .admin-table tbody tr.movie-row:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+</style>
 @endsection

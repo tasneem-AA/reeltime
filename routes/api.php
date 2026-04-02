@@ -65,4 +65,5 @@ Route::middleware('web')->group(function () {
 Route::middleware(['web', 'auth', 'admin'])->prefix('admin-api')->group(function () {
     Route::post('/movies', [App\Http\Controllers\Api\AdminController_Api::class, 'store']);
     Route::put('/movies/{movie_id}', [App\Http\Controllers\Api\AdminController_Api::class, 'update']);
+    Route::get('/movies/{movie_id}', [App\Http\Controllers\Api\AdminController_Api::class, 'show']);
 });

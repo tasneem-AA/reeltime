@@ -30,6 +30,7 @@ class AdminController_Api extends Controller
             'description' => 'required|string',
             'trailer_link' => 'nullable|url',
             'genres' => 'required|string',  
+            'this_movie_is' => 'nullable|string',
             'cast' => 'required|string',
             'duration' => 'required|integer|min:1',
             'rating' => 'nullable|numeric|min:0|max:10',
@@ -54,6 +55,7 @@ class AdminController_Api extends Controller
                 'duration' => $validated['duration'],
                 'rating' => $validated['rating'] ?? 0,
                 'poster' => $posterPath ? 'storage/' . $posterPath : null,
+                'this_movie_is' => $validated['this_movie_is'] ?? null,
             ]);
             
             return response()->json([
@@ -74,11 +76,14 @@ class AdminController_Api extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
-    }
-
+   public function show($id)
+{
+    $movie = Movie::findOrFail($id);
+    return response()->json([
+        'success' => true,
+        'data' => $movie
+    ]);
+}
     /**
      * Update the specified resource in storage.
      */
@@ -93,6 +98,7 @@ class AdminController_Api extends Controller
         'description' => 'required|string',
         'trailer_link' => 'nullable|url',
         'genres' => 'required|string',
+        'this_movie_is' => 'nullable|string',
         'cast' => 'required|string',
         'duration' => 'required|integer|min:1',
         'rating' => 'nullable|numeric|min:0|max:10',
@@ -115,6 +121,7 @@ class AdminController_Api extends Controller
         $movie->description = $validated['description'];
         $movie->trailer_link = $validated['trailer_link'] ?? null;
         $movie->genres = $validated['genres'];
+        $movie->this_movie_is = $validated['this_movie_is'] ?? null;
         $movie->cast = $validated['cast'];
         $movie->duration = $validated['duration'];
         $movie->rating = $validated['rating'] ?? 0;
