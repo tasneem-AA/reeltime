@@ -100,7 +100,10 @@ admin-page
       </button>
     </div>
 
-    
+     <section id="moviesTab" class="admin-tab-pane">
+      <div class="section-header">
+        
+      </div>
 
       <div class="admin-data-card">
         <div class="admin-table-wrap">
@@ -174,9 +177,7 @@ admin-page
 
     <section id="gamesTab" class="admin-tab-pane d-none">
       <div class="section-header">
-        <span class="eyebrow">Games</span>
-        <h2>Playable content</h2>
-        <p>Keep track of the enabled game types and their icons.</p>
+        
       </div>
 
       <div class="admin-data-card">
@@ -226,9 +227,7 @@ admin-page
 
     <section id="bookingsTab" class="admin-tab-pane d-none">
       <div class="section-header">
-        <span class="eyebrow">Bookings</span>
-        <h2>Recent reservations</h2>
-        <p>Monitor booking volume, movie demand, and reservation status from one view.</p>
+        
       </div>
 
       <div class="admin-data-card">
@@ -283,9 +282,7 @@ admin-page
 
     <section id="usersTab" class="admin-tab-pane d-none">
       <div class="section-header">
-        <span class="eyebrow">Users</span>
-        <h2>Member directory</h2>
-        <p>Review account activity and role assignments without leaving the dashboard.</p>
+        
       </div>
 
       <div class="admin-data-card">
