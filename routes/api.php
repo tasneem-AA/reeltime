@@ -62,6 +62,7 @@ Route::middleware('web')->group(function () {
     Route::get('/game-rounds/{game_round_id}', [GameRoundController::class, 'show']);
     Route::post('/game-rounds/{game_round_id}/answer', [GameRoundController::class, 'submitAnswer']);
 }); 
-Route::middleware(['web', 'auth', 'admin'])->prefix('admin')->group(function () {
-    Route::post('/movies', [AdminController_Api::class, 'store']);
+Route::middleware(['web', 'auth', 'admin'])->prefix('admin-api')->group(function () {
+    Route::post('/movies', [App\Http\Controllers\Api\AdminController_Api::class, 'store']);
+    Route::put('/movies/{movie_id}', [App\Http\Controllers\Api\AdminController_Api::class, 'update']);
 });

@@ -136,8 +136,19 @@ admin-page
                   <td>{{ $movie->duration }} min</td>
                   <td>
                     <div class="admin-actions">
-                      <button type="button" class="button button-secondary admin-icon-btn" aria-label="Edit movie">
-                        <i class="fas fa-edit" aria-hidden="true"></i>
+                      <button type="button" class="button button-secondary admin-icon-btn" 
+                          onclick="openEditMovieModal(
+                              '{{ $movie->movie_id }}',
+                              '{{ addslashes($movie->title) }}',
+                              '{{ addslashes($movie->description) }}',
+                              '{{ addslashes($movie->genres) }}',
+                              '{{ addslashes($movie->cast) }}',
+                              '{{ $movie->duration }}',
+                              '{{ $movie->trailer_link }}',
+                              '{{ $movie->rating }}',
+                              '{{ asset($movie->poster) }}'
+                          )" aria-label="Edit movie">
+                          <i class="fas fa-edit" aria-hidden="true"></i>
                       </button>
                       <button type="button" class="button button-secondary admin-icon-btn admin-icon-btn-danger delete-btn" data-url="{{route('admin.movies.destroy',$movie->movie_id)}}" aria-label="Delete movie">
                         <i class="fas fa-trash" aria-hidden="true"></i>
@@ -330,9 +341,9 @@ admin-page
 <div id="addMovieModal" class="admin-modal" onclick="closeModal('addMovieModal')">
     <div class="surface-card admin-modal-shell" onclick="event.stopPropagation()" style="max-width: 700px; max-height: 90vh; display: flex; flex-direction: column;">    
         <div style="flex-shrink: 0; padding: 0 0 1rem 0;">
-           <button type="button" class="modal-close-btn" onclick="closeModal('addMovieModal')" aria-label="Close" style="position: absolute; top: 1rem; right: 1rem;">
-              <i class="fas fa-times" aria-hidden="true"></i>
-          </button>
+           <button type="button" class="modal-close-btn" onclick="closeModal('addMovieModal')" aria-label="Close">
+    <i class="fas fa-times" aria-hidden="true"></i>
+</button>
             <div class="section-header" style="padding-right: 2.5rem;">
                 <span class="eyebrow">Movie Tools</span>
                 <h2>Add movie</h2>
@@ -418,24 +429,7 @@ admin-page
                         <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">YouTube embed URL (optional)</small>
                     </div>
                     
-                    
-                    <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-color);">
-                            <i class="fas fa-star" style="margin-right: 0.5rem; color: #ffc107;"></i>
-                            Rating (0-10)
-                        </label>
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <input type="range" name="rating" step="0.1" min="0" max="10" 
-                                   value="0"
-                                   oninput="this.nextElementSibling.value = this.value"
-                                   style="flex: 1; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1);">
-                            <input type="number" step="0.1" min="0" max="10" 
-                                   value="0"
-                                   oninput="this.previousElementSibling.value = this.value"
-                                   style="width: 70px; padding: 0.5rem; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; text-align: center;">
-                        </div>
-                        <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Default is 0 if not specified</small>
-                    </div>
+                  
                     
                     
                     <div>
@@ -468,7 +462,7 @@ admin-page
         
         <div style="flex-shrink: 0; padding-top: 1.5rem; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
             <div class="admin-actions" style="justify-content: flex-end; gap: 1rem;">
-               <button type="button" class="button button-secondary" onclick="closeModal('addMovieModal')" style="min-width: 100px;">
+              <button type="button" class="button button-secondary" data-close-modal="addMovieModal">
     <i class="fas fa-times"></i> Cancel
 </button>
                 <button type="submit" form="addMovieForm" class="button button-primary" id="submitMovieBtn" style="min-width: 120px;">
@@ -478,7 +472,103 @@ admin-page
         </div>
     </div>
 </div>
+<!-- Edit Movie Modal -->
+<div id="editMovieModal" class="admin-modal" onclick="closeModal('editMovieModal')">
+    <div class="surface-card admin-modal-shell" onclick="event.stopPropagation()" style="max-width: 700px; max-height: 90vh; display: flex; flex-direction: column;">
+        <div style="flex-shrink: 0; padding: 0 0 1rem 0;">
+            <button type="button" class="modal-close-btn" onclick="closeModal('editMovieModal')" aria-label="Close">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+            <div class="section-header" style="padding-right: 2.5rem;">
+                <span class="eyebrow">Movie Tools</span>
+                <h2>Edit Movie</h2>
+                <p>Update the movie details.</p>
+            </div>
+        </div>
 
+        <div style="flex: 1; overflow-y: auto; padding-right: 0.5rem; margin-right: -0.5rem;">
+            <form id="editMovieForm" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="movie_id" id="edit_movie_id">
+                <div style="display: grid; gap: 1.25rem;">
+                    <div>
+                        <label for="edit_title" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                            <i class="fas fa-film"></i> Title <span style="color: #ff6b6b;">*</span>
+                        </label>
+                        <input type="text" id="edit_title" name="title" required class="form-control" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                    </div>
+                    <div>
+                        <label for="edit_description" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                            <i class="fas fa-align-left"></i> Description <span style="color: #ff6b6b;">*</span>
+                        </label>
+                        <textarea id="edit_description" name="description" rows="4" required style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;"></textarea>
+                    </div>
+                    <div>
+                        <label for="edit_genres" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                            <i class="fas fa-tags"></i> Genres <span style="color: #ff6b6b;">*</span>
+                        </label>
+                        <input type="text" id="edit_genres" name="genres" required style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                    </div>
+                    <div>
+                        <label for="edit_cast" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                            <i class="fas fa-users"></i> Cast <span style="color: #ff6b6b;">*</span>
+                        </label>
+                        <input type="text" id="edit_cast" name="cast" required style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                    </div>
+                    <div>
+                        <label for="edit_duration" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                            <i class="fas fa-clock"></i> Duration (minutes) <span style="color: #ff6b6b;">*</span>
+                        </label>
+                        <input type="number" id="edit_duration" name="duration" required min="1" max="600" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                    </div>
+                    <div>
+                        <label for="edit_trailer_link" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                            <i class="fab fa-youtube"></i> Trailer Link
+                        </label>
+                        <input type="url" id="edit_trailer_link" name="trailer_link" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                            <i class="fas fa-star"></i> Rating (0-10)
+                        </label>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <input type="range" id="edit_rating_slider" name="rating" step="0.1" min="0" max="10" value="0" style="flex: 1;">
+                            <input type="number" id="edit_rating_number" step="0.1" min="0" max="10" value="0" style="width: 70px; padding: 0.5rem; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; text-align: center;">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="edit_poster" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                            <i class="fas fa-image"></i> Poster Image (leave empty to keep current)
+                        </label>
+                        <div style="border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px; padding: 1rem; text-align: center;">
+                            <input type="file" name="poster" accept="image/*" id="edit_poster_input" style="display: none;">
+                            <button type="button" onclick="document.getElementById('edit_poster_input').click()" class="button button-secondary">
+                                <i class="fas fa-upload"></i> Choose New Image
+                            </button>
+                            <div id="edit_poster_preview" style="margin-top: 0.5rem; display: none;">
+                                <img id="edit_poster_preview_img" style="max-width: 150px; max-height: 150px; border-radius: 8px;">
+                                <p id="edit_poster_file_name" style="color: var(--text-muted); font-size: 0.85rem;"></p>
+                            </div>
+                            <small style="color: var(--text-muted); display: block;">JPG, PNG, GIF, SVG up to 2MB</small>
+                        </div>
+                    </div>
+                    <div id="editMovieFormMessage" style="display: none; padding: 0.75rem 1rem; border-radius: 12px;"></div>
+                </div>
+            </form>
+        </div>
+        <div style="flex-shrink: 0; padding-top: 1.5rem; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div class="admin-actions" style="justify-content: flex-end; gap: 1rem;">
+                <button type="button" class="button button-secondary" onclick="closeModal('editMovieModal')">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="submit" form="editMovieForm" class="button button-primary" id="submitEditMovieBtn">
+                    <i class="fas fa-save"></i> Update Movie
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <div id="addGameModal" class="admin-modal" onclick="closeModal('addGameModal')">
   <div class="surface-card admin-modal-shell" onclick="event.stopPropagation()">
     <button type="button" class="modal-close-btn" onclick="closeModal('addGameModal')" aria-label="Close">
@@ -508,163 +598,4 @@ admin-page
         </div>
     </div>
 </div>
-<script>
-  function switchTab(tab) {
-    const tabs = ['movies', 'games', 'bookings', 'users'];
-    tabs.forEach((name) => {
-      const content = document.getElementById(`${name}Tab`);
-      const btn = document.getElementById(`${name}TabBtn`);
-      const isActive = name === tab;
-
-      if (content) {
-        content.classList.toggle('d-none', !isActive);
-      }
-
-      if (btn) {
-        btn.classList.toggle('is-active', isActive);
-      }
-    });
-  }
-
-  function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-    modal.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-    modal.classList.remove('is-open');
-    document.body.style.overflow = '';
-
-    if (modalId === 'addMovieModal') {
-        const form = document.getElementById('addMovieForm');
-        if (form) form.reset();
-        const posterPreview = document.getElementById('posterPreview');
-        if (posterPreview) posterPreview.style.display = 'none';
-        const messageDiv = document.getElementById('movieFormMessage');
-        if (messageDiv) messageDiv.style.display = 'none';
-    }
-  }
-
-  // Make functions globally available
-  window.switchTab = switchTab;
-  window.openModal = openModal;
-  window.closeModal = closeModal;
-
-  // Listen for clicks on data-close-modal elements
-  document.addEventListener('click', function(e) {
-    const closeBtn = e.target.closest('[data-close-modal]');
-    if (closeBtn) {
-        const modalId = closeBtn.getAttribute('data-close-modal');
-        if (modalId) {
-            closeModal(modalId);
-        }
-    }
-  });
-
-  document.addEventListener('DOMContentLoaded', function() {
-    switchTab('movies');
-
-    const addMovieForm = document.getElementById('addMovieForm');
-    if (addMovieForm) {
-      addMovieForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById('submitMovieBtn');
-        const messageDiv = document.getElementById('movieFormMessage');
-        const originalText = submitBtn.innerHTML;
-        
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-        messageDiv.style.display = 'none';
-        
-        const formData = new FormData(this);
-        
-        try {
-          const response = await fetch('/admin-api/movies', {
-            method: 'POST',
-            headers: {
-              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-              'Accept': 'application/json'
-            },
-            body: formData
-          });
-          
-          const data = await response.json();
-          
-          if (data.success) {
-            messageDiv.style.display = 'block';
-            messageDiv.style.background = 'rgba(74, 222, 128, 0.2)';
-            messageDiv.style.border = '1px solid rgba(74, 222, 128, 0.3)';
-            messageDiv.style.color = '#4ade80';
-            messageDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.message;
-            
-            addMovieForm.reset();
-            
-            setTimeout(() => {
-              closeModal('addMovieModal');
-              location.reload();
-            }, 2000);
-          } else {
-            messageDiv.style.display = 'block';
-            messageDiv.style.background = 'rgba(251, 113, 133, 0.2)';
-            messageDiv.style.border = '1px solid rgba(251, 113, 133, 0.3)';
-            messageDiv.style.color = '#fb7185';
-            messageDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + (data.message || 'Failed to add movie');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-          }
-        } catch (error) {
-          messageDiv.style.display = 'block';
-          messageDiv.style.background = 'rgba(251, 113, 133, 0.2)';
-          messageDiv.style.border = '1px solid rgba(251, 113, 133, 0.3)';
-          messageDiv.style.color = '#fb7185';
-          messageDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Network error. Please try again.';
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalText;
-        }
-      });
-    }
-    
-    const posterInput = document.getElementById('posterInput');
-    const posterPreview = document.getElementById('posterPreview');
-    const posterPreviewImg = document.getElementById('posterPreviewImg');
-    const posterFileName = document.getElementById('posterFileName');
-    
-    if (posterInput) {
-      posterInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            posterPreviewImg.src = e.target.result;
-            posterPreview.style.display = 'block';
-            posterFileName.textContent = file.name;
-          }
-          reader.readAsDataURL(file);
-        } else {
-          posterPreview.style.display = 'none';
-        }
-      });
-    }
-    
-    const closeDeleteModalBtn = document.getElementById('closeDeleteModal');
-    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-    
-    if (closeDeleteModalBtn) {
-      closeDeleteModalBtn.addEventListener('click', function() {
-        closeModal('deleteConfirmModal');
-      });
-    }
-    
-    if (cancelDeleteBtn) {
-      cancelDeleteBtn.addEventListener('click', function() {
-        closeModal('deleteConfirmModal');
-      });
-    }
-  });
-</script>
 @endsection

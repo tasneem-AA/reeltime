@@ -82,10 +82,58 @@ class AdminController_Api extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $movie_id)
     {
-        //
+    \Log::info('Admin API update called', ['movie_id' => $movie_id, 'data' => $request->all()]);
+
+    $movie = Movie::findOrFail($movie_id);
+
+    $validated = $request->validate([
+        'title' => 'required|string|max:255|unique:movies,title,' . $movie_id . ',movie_id',
+        'description' => 'required|string',
+        'trailer_link' => 'nullable|url',
+        'genres' => 'required|string',
+        'cast' => 'required|string',
+        'duration' => 'required|integer|min:1',
+        'rating' => 'nullable|numeric|min:0|max:10',
+        'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+    ]);
+
+    try {
+        if ($request->hasFile('poster')) {
+           if ($movie->poster && Storage::disk('public')->exists(str_replace('storage/', '', $movie->poster))) {
+                Storage::disk('public')->delete(str_replace('storage/', '', $movie->poster));
+            }
+
+            $file = $request->file('poster');
+            $filename = time() . '_' . Str::slug($validated['title']) . '.' . $file->getClientOriginalExtension();
+            $posterPath = $file->storeAs('posters', $filename, 'public');
+            $movie->poster = 'storage/' . $posterPath;
+        }
+
+        $movie->title = $validated['title'];
+        $movie->description = $validated['description'];
+        $movie->trailer_link = $validated['trailer_link'] ?? null;
+        $movie->genres = $validated['genres'];
+        $movie->cast = $validated['cast'];
+        $movie->duration = $validated['duration'];
+        $movie->rating = $validated['rating'] ?? 0;
+        $movie->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Movie updated successfully',
+            'data' => $movie
+        ], 200);
+
+    } catch (\Exception $e) {
+        \Log::error('Movie update failed: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to update movie: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Remove the specified resource from storage.
