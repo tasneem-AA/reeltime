@@ -46,6 +46,52 @@ function closeAuthModal() {
         });
 }
 
+function showToast(message, type = 'success') {
+    if (!message) {
+        return;
+    }
+
+    $('.toast').remove();
+
+    let $toast = $('<div class="toast"></div>')
+        .addClass(`toast-${type}`)
+        .text(message)
+        .appendTo('body');
+
+    setTimeout(() => {
+        $toast.addClass('show');
+    }, 10);
+
+    setTimeout(() => {
+        $toast.removeClass('show');
+        setTimeout(() => $toast.remove(), 300);
+    }, 3000);
+}
+
+function queueToast(message, type = 'success') {
+    if (!message) {
+        return;
+    }
+
+    sessionStorage.setItem('pendingToast', JSON.stringify({ message, type }));
+}
+
+function flushPendingToast() {
+    let pendingToast = sessionStorage.getItem('pendingToast');
+    if (!pendingToast) {
+        return;
+    }
+
+    sessionStorage.removeItem('pendingToast');
+
+    try {
+        let parsed = JSON.parse(pendingToast);
+        showToast(parsed.message, parsed.type || 'success');
+    } catch (error) {
+        showToast(pendingToast, 'success');
+    }
+}
+
 $(function () {
     window.movieComments = window.movieComments || {};
     // comments lal movies in bookings
@@ -210,7 +256,7 @@ $(function () {
         return shuffledSeats.slice(0, count);
     }
     function markRandomSeats(SEATS_RESERVED) {
-        let totalSeats = $(".seat");
+        let totalSeats = $(".seats .seat[data-seat-id]");
         let reservedSeats = getRandomSeats(totalSeats, SEATS_RESERVED);
         reservedSeats.forEach(seat => {
             $(seat).addClass("reserved");
@@ -229,7 +275,7 @@ $(function () {
     //for selecting seats
 
 
-    $(document).on("click", ".seat:not(.reserved)", function () {
+    $(document).on("click", ".seats .seat[data-seat-id]:not(.reserved)", function () {
         $(this).toggleClass("selected");
 
         let id = $(this).data("seat-id");
@@ -274,6 +320,8 @@ $(function () {
             openAuthModal('login');
             window.loginModalShouldOpen = false;
         }
+
+        flushPendingToast();
 
         // Tab switching
         $(document).on('click', '[data-tab]', function () {
@@ -453,6 +501,7 @@ $(function () {
 
                         $('#signupSuccess').text(response.message);
                         $('#signupError').text('');
+                        queueToast(response.message, 'success');
 
                         updateLoginStatus();
 
@@ -755,7 +804,7 @@ $("#confirmbtn").on("click", function () {
             $("#cinemasSelect").prop("selectedIndex", 0);
             // Reset seats
             selectedSeats.clear();
-            $(".seat.selected").removeClass("selected");
+            $(".seats .seat.selected").removeClass("selected");
             sessionStorage.removeItem("selectedSeats");
             sessionStorage.removeItem("totalPrice");
             $("#reserveBtn").prop("disabled", true);

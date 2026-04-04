@@ -63,19 +63,17 @@ search-page
 
   <section class="surface-card search-results-card search-results-section">
     <div class="results-header">
-      <div class="section-header">
-        <span class="eyebrow">Results</span>
-        <h2>Matching titles</h2>
-        <p id="resultsCount">Loading movies...</p>
-      </div>
+      <p id="resultsCount">Loading movies...</p>
 
-      <select id="searchSort" aria-label="Sort search results">
-        <option value="relevance">Relevance</option>
-        <option value="title-asc">Title A-Z</option>
-        <option value="title-desc">Title Z-A</option>
-        <option value="rating-desc">Rating High to Low</option>
-        <option value="rating-asc">Rating Low to High</option>
-      </select>
+      <div class="filter-controls">
+        <select id="searchSort" aria-label="Sort search results">
+          <option value="relevance" selected>Filters</option>
+          <option value="title-asc">Title A-Z</option>
+          <option value="title-desc">Title Z-A</option>
+          <option value="rating-desc">Rating High to Low</option>
+          <option value="rating-asc">Rating Low to High</option>
+        </select>
+      </div>
     </div>
 
     <div id="searchResults" aria-live="polite"></div>
@@ -109,7 +107,7 @@ search-page
     <div class="modal__body">
       <h3 id="modal-title">movie</h3>
       <p id="modal-text"></p>
-      <button class="add-watchlist-btn">+ Add to Watchlist</button>
+      <button class="button button-primary add-watchlist-btn">+ Add to Watchlist</button>
 
       <div class="comments-section">
         <h4>Reviews</h4>

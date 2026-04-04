@@ -113,7 +113,6 @@ let movieImage = '';
             };
             saved.push(newMovie);
             $button.text('Remove from Watchlist').addClass('added');
-            $button.css('background', 'var(--accent)');
            }
 
         // Save to localStorage

@@ -32,6 +32,21 @@
         }
     }
 
+    function paymentMethodLabel(paymentMethod) {
+        return paymentMethod === "cash" ? "Pay at cinema" : "Card";
+    }
+
+    function togglePaymentFields() {
+        const useCard = $("#PaymentMethod").val() === "card";
+
+        $("#cardPaymentFields").prop("hidden", !useCard);
+        $("#CardNumber, #CVV").prop("disabled", !useCard);
+
+        if (!useCard) {
+            $("#CardNumber, #CVV").val("");
+        }
+    }
+
     function getShowtimes(filters = {}) {
         return (bookingData.showtimes || [])
             .filter((showtime) => {
@@ -235,7 +250,7 @@
         const capacity = seatCapacity();
         const availableSeats = Math.max(0, Math.min(capacity, Number(showtime.available_seats) || 0));
         const reservedCount = Math.max(0, capacity - availableSeats);
-        const seats = Array.from(document.querySelectorAll(".seat"));
+        const seats = Array.from(document.querySelectorAll(".seats .seat[data-seat-id]"));
 
         seats
             .sort((left, right) => {
@@ -317,10 +332,11 @@
         renderDateOptions();
         renderTimeOptions();
 
-        $("#Name, #Email, #PhoneNumber, #CardNumber, #CVV").val("");
+        $("#Name, #Email, #PhoneNumber, #PaymentMethod, #CardNumber, #CVV").val("");
         $("#confirmation").empty();
         $("#Datebtn").prop("disabled", true);
         showDateMessage("");
+        togglePaymentFields();
 
         renderSeatMap(null);
 
@@ -347,6 +363,7 @@
             time: state.selectedShowtime?.time || booking.time,
             seats: booking.seats,
             price: booking.price,
+            payment_method: booking.payment_method_label || paymentMethodLabel($("#PaymentMethod").val()),
             status: booking.status,
         });
 
@@ -373,6 +390,7 @@
         const name = $("#Name").val().trim();
         const email = $("#Email").val().trim();
         const phone = $("#PhoneNumber").val().trim();
+        const paymentMethod = $("#PaymentMethod").val();
         const card = $("#CardNumber").val().trim();
         const cvv = $("#CVV").val().trim();
 
@@ -380,6 +398,8 @@
         if (!email) return "Please enter your email.";
         if (!phone) return "Please enter your phone number.";
         if (!/^[0-9]+$/.test(phone)) return "Please enter a valid phone number.";
+        if (!paymentMethod) return "Please choose a payment method.";
+        if (paymentMethod !== "card") return "";
         if (!card) return "Please enter your card number.";
         if (!/^[0-9]+$/.test(card)) return "Please enter a valid card number.";
         if (!cvv) return "Please enter your CVV.";
@@ -460,6 +480,7 @@
                 customer_name: $("#Name").val().trim(),
                 customer_email: $("#Email").val().trim(),
                 customer_phone: $("#PhoneNumber").val().trim(),
+                payment_method: $("#PaymentMethod").val(),
                 selected_seats: [...selectedSeats],
             },
             success(response) {
@@ -481,6 +502,7 @@
                         <li><strong>Time:</strong> ${response.booking.time}</li>
                         <li><strong>Cinema:</strong> ${response.booking.cinema}</li>
                         <li><strong>Seats:</strong> ${(response.booking.seats || []).join(", ")}</li>
+                        <li><strong>Payment:</strong> ${response.booking.payment_method_label}</li>
                         <li><strong>Total Price:</strong> $${Number(response.booking.price).toFixed(2)}</li>
                     </ul>
                     <p style="color:#f97316;">Enjoy your movie!</p>
@@ -551,6 +573,7 @@
         $("#dateselect").off("input change");
         $("#Datebtn").off("click");
         $("#confirmbtn").off("click");
+        $("#PaymentMethod").off("change");
 
         resetFormToStart();
 
@@ -624,12 +647,16 @@
             unlockStep(4);
         });
 
-        $(document).on("click.bookingsDbSummary", ".seat:not(.reserved)", function () {
+        $(document).on("click.bookingsDbSummary", ".seats .seat[data-seat-id]:not(.reserved)", function () {
             setTimeout(updateCheckoutSummary, 0);
         });
 
         $("#confirmbtn").on("click", function () {
             handleConfirmBooking();
+        });
+
+        $("#PaymentMethod").on("change", function () {
+            togglePaymentFields();
         });
 
         $(document).on("click", ".showShowTimes-btn", function (event) {
@@ -645,6 +672,31 @@
 
             if (typeof openMovieModal === "function") {
                 openMovieModal(card);
+            }
+        });
+
+        $(document).on("click", ".booking-gallery .movie-card", function (event) {
+            if ($(event.target).closest(".showShowTimes-btn, .watch-flag").length) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (typeof openMovieModal === "function") {
+                openMovieModal(this);
+            }
+        });
+
+        $(document).on("keydown", ".booking-gallery .movie-card", function (event) {
+            if (event.key !== "Enter" && event.key !== " ") {
+                return;
+            }
+
+            event.preventDefault();
+
+            if (typeof openMovieModal === "function") {
+                openMovieModal(this);
             }
         });
     });

@@ -35,6 +35,7 @@
     window.loginModalShouldOpen = {{ session('login_required') ? 'true' : 'false' }};
   </script>
   <script src="{{ asset('js/config.js') }}"></script>
+  <script src="{{ asset('js/script.js') }}" defer></script>
   @stack('head-scripts')
 </head>
 @php($bodyClass = trim($__env->yieldContent('body-class')))
@@ -60,7 +61,6 @@
   @include('partials.footer')
   @include('partials.login-modal')
 
-  <script src="{{ asset('js/script.js') }}" defer></script>
   <script src="{{ asset('js/scriptJQ.js') }}" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   @stack('scripts')

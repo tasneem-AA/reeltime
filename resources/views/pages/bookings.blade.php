@@ -90,43 +90,50 @@ bookings-page
         </div>
 
         <div class="step-content" id="step4">
-          <div class="container">
-            <div class="front-screen">
-              <div class="screen"></div>
-              <div class="overlay"></div>
+          <div class="front-screen">
+            <div class="screen"></div>
+            <div class="overlay"></div>
+          </div>
+          <div class="seats">
+            <div class="front-row first-front-row"></div>
+            <div class="front-row second-front-row"></div>
+            <div class="middle-row"></div>
+            <div class="front-row second-last-row"></div>
+            <div class="front-row first-last-row"></div>
+          </div>
+          <div class="legend">
+            <div>
+              <div class="seat available"></div>
+              <span>Available</span>
             </div>
-            <div class="seats">
-              <div class="front-row first-front-row"></div>
-              <div class="front-row second-front-row"></div>
-              <div class="middle-row"></div>
-              <div class="front-row second-last-row"></div>
-              <div class="front-row first-last-row"></div>
+            <div>
+              <div class="seat selected"></div>
+              <span>Selected</span>
             </div>
-            <div class="legend">
-              <div>
-                <div class="seat available"></div>
-                <span>Available</span>
-              </div>
-              <div>
-                <div class="seat selected"></div>
-                <span>Selected</span>
-              </div>
-              <div>
-                <div class="seat reserved"></div>
-                <span>Reserved</span>
-              </div>
+            <div>
+              <div class="seat reserved"></div>
+              <span>Reserved</span>
             </div>
           </div>
           <button class="button button-primary" type="button" id="reserveBtn" disabled onclick="completeStep()">Reserve</button>
         </div>
 
         <div class="step-content" id="step5">
-          <input type="text" id="Name" placeholder="Enter your full name">
-          <input type="text" id="Email" placeholder="Enter your email">
-          <input type="text" id="PhoneNumber" placeholder="Enter your phone number">
-          <input type="text" id="CardNumber" placeholder="Enter your card number">
-          <input type="text" id="CVV" placeholder="Enter your CVV">
-          <button class="button button-primary" type="button" id="confirmbtn">Confirm</button>
+          <div class="checkout-fields">
+            <input type="text" id="Name" class="form-control mb-2" placeholder="Enter your full name">
+            <input type="text" id="Email" class="form-control mb-2" placeholder="Enter your email">
+            <input type="text" id="PhoneNumber" class="form-control mb-2" placeholder="Enter your phone number">
+            <select id="PaymentMethod" class="form-select mb-2" aria-label="Choose payment method">
+              <option value="">Choose a payment method</option>
+              <option value="card">Card</option>
+              <option value="cash">Pay at cinema</option>
+            </select>
+            <div id="cardPaymentFields" class="booking-payment-fields" hidden>
+              <input type="text" id="CardNumber" class="form-control mb-2" placeholder="Enter your card number">
+              <input type="text" id="CVV" class="form-control mb-2" placeholder="Enter your CVV">
+            </div>
+            <button class="button button-primary" type="button" id="confirmbtn">Confirm</button>
+          </div>
           <div id="TotalPrice"></div>
           <div id="confirmation"></div>
         </div>
@@ -144,6 +151,8 @@ bookings-page
         <div class="movie" id="movie">
           @forelse($featuredMovies as $movie)
             <figure class="movie-card"
+              role="button"
+              tabindex="0"
               data-movie-id="{{ $movie['id'] }}"
               data-title="{{ $movie['title'] }}"
               data-description="{{ $movie['description'] }}"
@@ -201,7 +210,7 @@ bookings-page
     <div class="modal__body">
       <h3 id="modal-title">movie</h3>
       <p id="modal-text"></p>
-      <button class="add-watchlist-btn">+ Add to Watchlist</button>
+      <button class="button button-primary add-watchlist-btn">+ Add to Watchlist</button>
 
       <div class="comments-section">
         <h4>Reviews</h4>

@@ -22,14 +22,18 @@ class BookingController extends Controller
         $cinemas = Cinema::query()
             ->whereHas('showtimes', fn ($query) => $query
                 ->whereDate('show_date', '>=', today())
-                ->where('available_seats', '>', 0))
+                ->where('available_seats', '>', 0)
+                ->whereTime('show_time', '>=', '14:00')
+                ->whereTime('show_time', '<=', '23:59'))
             ->orderBy('name')
             ->get();
 
         $movies = Movie::query()
             ->whereHas('showtimes', fn ($query) => $query
                 ->whereDate('show_date', '>=', today())
-                ->where('available_seats', '>', 0))
+                ->where('available_seats', '>', 0)
+                ->whereTime('show_time', '>=', '14:00')
+                ->whereTime('show_time', '<=', '23:59'))
             ->with([
                 'ratings' => fn ($query) => $query
                     ->whereNotNull('comment')
@@ -37,6 +41,8 @@ class BookingController extends Controller
                 'showtimes' => fn ($query) => $query
                     ->whereDate('show_date', '>=', today())
                     ->where('available_seats', '>', 0)
+                    ->whereTime('show_time', '>=', '14:00')
+                    ->whereTime('show_time', '<=', '23:59')
                     ->with('cinema:cinema_id,name,location')
                     ->orderBy('show_date')
                     ->orderBy('show_time'),
@@ -76,6 +82,7 @@ class BookingController extends Controller
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_email' => ['required', 'email', 'max:255'],
             'customer_phone' => ['required', 'string', 'max:30'],
+            'payment_method' => ['required', 'string', 'in:card,cash'],
             'selected_seats' => ['nullable', 'array'],
             'selected_seats.*' => ['string', 'max:30'],
         ]);
@@ -141,6 +148,7 @@ class BookingController extends Controller
                     'name' => $payload['customer_name'],
                     'email' => $payload['customer_email'],
                     'phone' => $payload['customer_phone'],
+                    'payment_method' => $payload['payment_method'],
                     'selected_seats' => $selectedSeats,
                 ]),
                 'booking_date' => now(),
@@ -163,6 +171,8 @@ class BookingController extends Controller
                     'seats' => $selectedSeats,
                     'seat_count' => $seatCount,
                     'price' => $totalPrice,
+                    'payment_method' => $payload['payment_method'],
+                    'payment_method_label' => $this->paymentMethodLabel($payload['payment_method']),
                     'status' => 'upcoming',
                 ],
                 'showtime' => [
@@ -296,7 +306,28 @@ class BookingController extends Controller
     {
         $rawTime = (string) ($showtime->getRawOriginal('show_time') ?: $showtime->show_time);
         $format = strlen($rawTime) > 5 ? 'H:i:s' : 'H:i';
+        $carbon = Carbon::createFromFormat($format, $rawTime);
 
-        return Carbon::createFromFormat($format, $rawTime)->format('g:i A');
+        // Round minutes to nearest 30
+        $minutes = $carbon->minute;
+        if ($minutes < 15) {
+            $carbon->setMinute(0);
+        } elseif ($minutes < 45) {
+            $carbon->setMinute(30);
+        } else {
+            $carbon->setMinute(0);
+            $carbon->addHour();
+        }
+
+        // Format: show minutes only if not :00
+        return $carbon->minute === 0 ? $carbon->format('g A') : $carbon->format('g:i A');
+    }
+
+    private function paymentMethodLabel(string $paymentMethod): string
+    {
+        return match ($paymentMethod) {
+            'cash' => 'Pay at cinema',
+            default => 'Card',
+        };
     }
 }

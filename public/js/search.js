@@ -194,4 +194,14 @@ $(function () {
 
     $input.on("input", triggerSearch);
     $sort.on("change", triggerSearch);
+
+    // Handle movie card clicks to open modal
+    $(document).on("click", "#searchResults .movie-card", function(e) {
+        if ($(e.target).closest('.watch-flag').length) {
+            return;
+        }
+        if (typeof openMovieModal === "function") {
+            openMovieModal(this);
+        }
+    });
 });
