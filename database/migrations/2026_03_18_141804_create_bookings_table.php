@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2);
             $table->enum('status', ['pending', 'confirmed', 'cancelled'])->default('pending');
             $table->text('customer_info')->nullable();
-            $table->timestamp('booking_date')->useCurrent();
+            $table->datetime('booking_date')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');

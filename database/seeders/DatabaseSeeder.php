@@ -187,8 +187,6 @@ class DatabaseSeeder extends Seeder
                         'selected_seats' => $assignedSeats,
                     ]),
                     'booking_date' => $bookingDate,
-                    'created_at' => $bookingDate,
-                    'updated_at' => $bookingDate,
                 ]);
             }
 
