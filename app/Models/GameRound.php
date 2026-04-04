@@ -15,6 +15,7 @@ class GameRound extends Model
         'user_id',
         'game_id',
         'score',
+        'status',
     ];
 
     protected function casts(): array

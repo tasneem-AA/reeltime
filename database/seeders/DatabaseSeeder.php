@@ -18,11 +18,10 @@ class DatabaseSeeder extends Seeder
         $users = \App\Models\User::factory(20)->create();
 
         $this->call(MovieSeeder::class);
+        $this->call(GameSeeder::class);
+        
         $movies = \App\Models\Movie::all();
-
         $cinemas = \App\Models\Cinema::factory(5)->create();
-
-        $games = \App\Models\Game::factory(3)->create();
 
         foreach ($users->random(10) as $user) {
             foreach ($movies->random(3) as $movie) {
@@ -61,13 +60,10 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        foreach ($games as $game) {
-            \App\Models\Question::factory(5)->create([
-                'game_id' => $game->game_id,
-            ]);
-        }
-
         foreach ($users->random(10) as $user) {
+            // Get all games from the database (created by GameSeeder)
+            $games = \App\Models\Game::all();
+            
             foreach ($games->random(2) as $game) {
                 \App\Models\GameRound::factory()->create([
                     'user_id' => $user->user_id,
@@ -78,6 +74,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             HeroBannerSeeder::class,
+            MovieThisMovieIsSeeder::class,
         ]);
     }
 }

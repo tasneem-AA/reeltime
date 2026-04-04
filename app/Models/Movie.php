@@ -17,6 +17,7 @@ class Movie extends Model
         'trailer_link',
         'cast',
         'genres',
+        'this_movie_is',
         'rating',
         'duration',
         'poster',

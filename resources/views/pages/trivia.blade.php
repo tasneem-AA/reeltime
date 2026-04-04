@@ -7,7 +7,7 @@ trivia-page
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/trivia.js') }}" defer></script>
+<script src="{{ asset('js/trivia-updated.js') }}" defer></script>
 @endpush
 
 @section('content')
@@ -49,50 +49,25 @@ trivia-page
 
   <div id="gamesContainer" class="games-container" style="display: none;">
     <section class="games-grid">
-      <article class="game-card" data-game="guess">
-        <div class="game-icon">
-          <i class="fas fa-theater-masks" aria-hidden="true"></i>
-        </div>
-        <h3>Emoji challenge</h3>
-        <p>Guess movies from emoji combinations.</p>
-        <button class="play-btn" type="button" onclick="startGuessGame()">Play now</button>
-      </article>
-
-      <article class="game-card" data-game="character">
-        <div class="game-icon">
-          <i class="fas fa-users" aria-hidden="true"></i>
-        </div>
-        <h3>Character match</h3>
-        <p>Match characters to their movies.</p>
-        <button class="play-btn" type="button" onclick="startCharacterGame()">Play now</button>
-      </article>
-
-      <article class="game-card" data-game="quotes">
-        <div class="game-icon">
-          <i class="fas fa-quote-right" aria-hidden="true"></i>
-        </div>
-        <h3>Movie quotes</h3>
-        <p>Identify movies from famous lines.</p>
-        <button class="play-btn" type="button" onclick="startQuotesGame()">Play now</button>
-      </article>
-
-      <article class="game-card" data-game="scenes">
-        <div class="game-icon">
-          <i class="fas fa-film" aria-hidden="true"></i>
-        </div>
-        <h3>Movie scenes</h3>
-        <p>Guess movies from scene descriptions.</p>
-        <button class="play-btn" type="button" onclick="startScenesGame()">Play now</button>
-      </article>
-
-      <article class="game-card" data-game="coming-soon">
-        <div class="game-icon">
-          <i class="fas fa-rocket" aria-hidden="true"></i>
-        </div>
-        <h3>More games</h3>
-        <p>New game modes are on the way.</p>
-        <button class="play-btn" type="button" disabled>Coming soon</button>
-      </article>
+      @forelse($games as $game)
+        <article class="game-card" data-game="{{ $game->game_type }}">
+          <div class="game-icon">
+            <i class="fas {{ $game->icon ?? 'fa-gamepad' }}" aria-hidden="true"></i>
+          </div>
+          <h3>{{ $game->title }}</h3>
+          <p>{{ $game->description }}</p>
+          <button class="play-btn" type="button" onclick="startGameByType('{{ $game->game_type }}')">Play now</button>
+        </article>
+      @empty
+        <article class="game-card" data-game="coming-soon">
+          <div class="game-icon">
+            <i class="fas fa-rocket" aria-hidden="true"></i>
+          </div>
+          <h3>No Games</h3>
+          <p>Game modes coming soon.</p>
+          <button class="play-btn" type="button" disabled>Coming soon</button>
+        </article>
+      @endforelse
     </section>
 
     <section class="surface-card leaderboard-section">
