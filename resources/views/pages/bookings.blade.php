@@ -7,28 +7,12 @@ bookings-page
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/watchlist.js') }}" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.gallery2 .movie-card').forEach(card => {
-      const title = card.dataset.title || '';
-      const desc = card.dataset.description || '';
-      const rating = card.dataset.rating || 'N/A';
-      const time = card.dataset.time || 'N/A';
-      const overlay = document.createElement('div');
-      overlay.className = 'movie-overlay';
-      overlay.innerHTML = `
-        <p class="movie-overlay-title">${title}</p>
-        <p class="movie-overlay-desc">${desc}</p>
-        <div class="movie-overlay-bottom">
-          <span class="film-overlay">${time}</span>
-          <span class="movie-overlay-rating">${rating} / 5 stars</span>
-        </div>
-      `;
-      card.appendChild(overlay);
-    });
-  });
+  window.bookingData = @json($bookingData);
+  window.bookingStoreUrl = "{{ route('bookings.store') }}";
 </script>
+<script src="{{ asset('js/watchlist.js') }}" defer></script>
+<script src="{{ asset('js/bookings.js') }}" defer></script>
 @endpush
 
 @section('content')
@@ -79,31 +63,27 @@ bookings-page
       <div class="booking-stage">
         <div class="step-content default" id="step1">
           <select id="cinemasSelect">
-            <option value="SpotChoueifat">The Spot Choueifat</option>
-            <option value="SpotSaida">The Spot Saida</option>
+            <option value="">Choose a cinema</option>
+            @foreach($bookingData['cinemas'] as $cinema)
+              <option value="{{ $cinema['id'] }}">{{ $cinema['name'] }}</option>
+            @endforeach
           </select>
           <button class="button button-primary" type="button" onclick="completeStep()">Submit</button>
         </div>
 
         <div class="step-content" id="step2">
           <select id="movieselect">
-            <option value="TheRunningMan">The Running Man</option>
-            <option value="Predator:Badlands">Predator: Badlands</option>
-            <option value="HardaBasht">HardaBasht</option>
-            <option value="Jujutsu Kaisen:Execution">Jujutsu Kaisen: Execution</option>
-            <option value="Playdate">Playdate</option>
-            <option value="ElSelemWElThoban">El Selem W El Thoban</option>
+            <option value="">Choose a movie</option>
           </select>
           <button class="button button-primary" type="button" onclick="completeStep()">Submit</button>
         </div>
 
         <div class="step-content" id="step3">
-          <input type="date" id="dateselect">
+          <select id="dateselect">
+            <option value="">Choose a date</option>
+          </select>
           <select id="timeselect">
-            <option value="1:00">1:00 pm</option>
-            <option value="3:00">3:00 pm</option>
-            <option value="6:00">6:00 pm</option>
-            <option value="9:00">9:00 pm</option>
+            <option value="">Choose a time</option>
           </select>
           <button class="button button-primary" type="button" id="Datebtn" disabled>Submit</button>
           <div id="datecompletestep"></div>
@@ -162,77 +142,35 @@ bookings-page
 
       <section class="gallery2" id="gallery2">
         <div class="movie" id="movie">
-          <figure class="movie-card" data-title="The Running Man"
-            data-description="In a near-future society, The Running Man is the top-rated show on television, a deadly competition where contestants must survive 30 days while being hunted by professional assassins."
-            data-trailer-id="YOUR_TRAILER_ID_4"
-            data-cast="Arnold Schwarzenegger, Maria Conchita Alonso, Richard Dawson"
-            data-genres="Action, Sci-Fi, Thriller"
-            data-this-movie-is="Intense, Violent, Futuristic"
-            data-rating="4.3"
-            data-time="115 min">
-            <img src="{{ asset('imgs/therunningman-min.png') }}" alt="The Running Man">
-            <button class="showShowTimes-btn" type="button">View showtimes</button>
-          </figure>
-
-          <figure class="movie-card" data-title="Predator:Badlands"
-            data-description="A young Predator outcast from his clan finds an unlikely ally on his journey in search of the ultimate adversary."
-            data-trailer-id="YOUR_TRAILER_ID_4"
-            data-cast="Elle Fanning, Ravi Narayan, Micheal Homik"
-            data-genres="Action, Sci-Fi, Horror"
-            data-this-movie-is="Gory, Suspenseful, Alien Hunt"
-            data-rating="3.3"
-            data-time="125 min">
-            <img src="{{ asset('imgs/predator badlands-min.png') }}" alt="Predator: Badlands">
-            <button class="showShowTimes-btn" type="button">View showtimes</button>
-          </figure>
-
-          <figure class="movie-card" data-title="HardaBasht"
-            data-description="A mother and her three boys live in the poor suburbs of Beirut, and a string of choices pulls the whole neighborhood into chaos."
-            data-trailer-id="YOUR_TRAILER_ID_4"
-            data-cast="Randa Kaady, Alexandra Kahwagi, Hussein Kaouk"
-            data-genres="Drama, Family, Crime"
-            data-this-movie-is="Emotional, Lebanese, Gritty"
-            data-rating="4.1"
-            data-time="155 min">
-            <img src="{{ asset('imgs/hardabsht-min.png') }}" alt="HardaBasht poster">
-            <button class="showShowTimes-btn" type="button">View showtimes</button>
-          </figure>
-
-          <figure class="movie-card" data-title="Jujutsu Kaisen:Execution"
-            data-description="A veil drops over Shibuya on Halloween, trapping civilians while sorcerers and curse users collide in one of the series' biggest conflicts."
-            data-trailer-id="YOUR_TRAILER_ID_5"
-            data-cast="Adam McArthur, Jun'ya Enoki, Yuchi Nakamura"
-            data-genres="Action, Fantasy, Anime"
-            data-this-movie-is="Exciting, Supernatural, Intense"
-            data-rating="4.7"
-            data-time="175 min">
-            <img src="{{ asset('imgs/jujutsu kaisen-min.png') }}" alt="Jujutsu Kaisen:Execution poster">
-            <button class="showShowTimes-btn" type="button">View showtimes</button>
-          </figure>
-
-          <figure class="movie-card" data-title="Playdate"
-            data-description="A reluctant stay-at-home dad accepts an invitation that turns into a chaotic run for survival with another father and their kids."
-            data-trailer-id="YOUR_TRAILER_ID_6"
-            data-cast="Alan Ritchson, Kevin James, Banks Peirce"
-            data-genres="Comedy, Action, Thriller"
-            data-this-movie-is="Funny, Suspenseful, Action-Packed"
-            data-rating="4.2"
-            data-time="185 min">
-            <img src="{{ asset('imgs/playdate-min.png') }}" alt="Playdate poster">
-            <button class="showShowTimes-btn" type="button">View showtimes</button>
-          </figure>
-
-          <figure class="movie-card" data-title="El Selem W El Thoban"
-            data-description="In Snake and Ladder, love and ambition collide as two former partners struggle with who they became after distance and new relationships changed everything."
-            data-trailer-id="GRm2_FzP1m0"
-            data-cast="Amr Youssef, Asmaa Galal, Dhafer L'Abidine"
-            data-genres="Romance, Drama"
-            data-this-movie-is="Emotional, Romantic, Thought-Provoking"
-            data-rating="2.3"
-            data-time="168 min">
-            <img src="{{ asset('imgs/El Selem W El Thoban-min.png') }}" alt="El Selem W El Thoban">
-            <button class="showShowTimes-btn" type="button">View showtimes</button>
-          </figure>
+          @forelse($featuredMovies as $movie)
+            <figure class="movie-card"
+              data-movie-id="{{ $movie['id'] }}"
+              data-title="{{ $movie['title'] }}"
+              data-description="{{ $movie['description'] }}"
+              data-trailer-url="{{ $movie['trailer_url'] }}"
+              data-cast="{{ implode(', ', $movie['cast']) }}"
+              data-genres="{{ implode(', ', $movie['genres']) }}"
+              data-this-movie-is="{{ implode(', ', $movie['tags']) }}"
+              data-rating="{{ $movie['rating'] !== null ? number_format($movie['rating'], 1) : 'N/A' }}"
+              data-time="{{ $movie['time'] ?? 'N/A' }}"
+              data-showtimes='@json($movie['modal_showtimes'])'>
+              <img src="{{ $movie['poster_url'] }}" alt="{{ $movie['title'] }} poster">
+              <button class="showShowTimes-btn" type="button">View showtimes</button>
+              <div class="movie-overlay">
+                <p class="movie-overlay-title">{{ $movie['title'] }}</p>
+                <p class="movie-overlay-desc">{{ $movie['description'] }}</p>
+                <div class="movie-overlay-bottom">
+                  <span class="film-overlay">{{ $movie['time'] ?? 'N/A' }}</span>
+                  <span class="movie-overlay-rating">{{ $movie['rating'] !== null ? number_format($movie['rating'], 1) : 'N/A' }} / 5 stars</span>
+                </div>
+              </div>
+            </figure>
+          @empty
+            <div class="empty-watchlist" style="grid-column: 1 / -1;">
+              <h3>No showtimes available</h3>
+              <p>Add movies and showtimes in the database to make the booking flow available here.</p>
+            </div>
+          @endforelse
         </div>
       </section>
     </aside>
@@ -256,12 +194,7 @@ bookings-page
         <p><strong>Genres:</strong> <span id="modal-genres"></span></p>
         <p><strong>This movie is:</strong> <span id="modal-this-movie-is"></span></p>
         <p class="movieshowtime"><strong>Showtimes:</strong></p>
-        <div class="showtimes">
-          <span class="showtime-pill">1:00pm</span>
-          <span class="showtime-pill">3:00pm</span>
-          <span class="showtime-pill">6:00pm</span>
-          <span class="showtime-pill">9:00pm</span>
-        </div>
+        <div class="showtimes" id="modal-showtimes"></div>
       </div>
     </div>
 

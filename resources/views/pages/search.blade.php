@@ -7,6 +7,9 @@ search-page
 @endsection
 
 @push('scripts')
+<script>
+  window.searchMovies = @json($searchMovies);
+</script>
 <script src="{{ asset('js/search.js') }}" defer></script>
 <script src="{{ asset('js/watchlist.js') }}" defer></script>
 @endpush

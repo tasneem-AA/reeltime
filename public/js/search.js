@@ -8,6 +8,7 @@ $(function () {
 
     let allMovies = [];
     let watchlistTitles = new Set();
+    window.movieComments = window.movieComments || {};
 
     function getCurrentUser() {
         if (window.authUser) {
@@ -56,32 +57,27 @@ $(function () {
         triggerSearch();
     });
 
-    $.getJSON("../data/movies.json")
-        .done(function (data) {
-            allMovies = [];
-            window.movieComments = window.movieComments || [];
+    if (Array.isArray(window.searchMovies)) {
+        allMovies = window.searchMovies;
 
-            (data.categories || []).forEach((cat) => {
-                (cat.movies || []).forEach((movie) => {
-                    allMovies.push(movie);
-                    if (Array.isArray(movie.comments) && movie.comments.length) {
-                        window.movieComments[movie.title] = movie.comments;
-                    }
-                });
-            });
-
-            refreshWatchlistTitles();
-            triggerSearch();
-        })
-        .fail(function () {
-            $count.text("Couldn't load movies.");
+        allMovies.forEach((movie) => {
+            if (Array.isArray(movie.comments) && movie.comments.length) {
+                window.movieComments[movie.title] = movie.comments;
+            }
         });
+
+        refreshWatchlistTitles();
+        triggerSearch();
+    } else {
+        $count.text("Couldn't load movies.");
+    }
 
     function resolveImagePath(image) {
         if (!image) return "../imgs/default-movie.jpg";
-        if (image.startsWith("../")) return image;
-        if (image.startsWith("/")) return ".." + image;
-        return "../" + image.replace(/^\/+/, "");
+        if (/^(https?:)?\/\//.test(image)) return image;
+        if (image.startsWith("../") || image.startsWith("./")) return image;
+        if (image.startsWith("/")) return image;
+        return "/" + image.replace(/^\/+/, "");
     }
 
     function applySort(list, mode) {
@@ -116,22 +112,28 @@ $(function () {
             const title = movie.title || "";
             const description = movie.description || movie.overview || "";
             const rating = movie.rating ?? "N/A";
-            const runtime = movie.time || movie.duration || "";
+            const runtime = movie.time || (movie.duration ? `${movie.duration} min` : "");
             const cast = Array.isArray(movie.cast) ? movie.cast.join(", ") : (movie.cast || "");
             const genres = Array.isArray(movie.genres) ? movie.genres.join(", ") : (movie.genre || movie.genres || "");
             const mood = Array.isArray(movie.tags) ? movie.tags.join(", ") : (movie.thisMovieIs || movie.tags || "");
-            const imgSrc = resolveImagePath(movie.image);
+            const imgSrc = resolveImagePath(movie.poster_url || movie.image);
             const inWatchlist = watchlistTitles.has(title);
+            const trailerUrl = movie.trailer_url || "";
+            const modalShowtimes = Array.isArray(movie.showtimes)
+                ? movie.showtimes.map((showtime) => showtime.display).filter(Boolean)
+                : [];
 
             const $card = $(`
                 <figure class="movie-card search-result-card"
                     data-title="${escapeHtml(title)}"
                     data-description="${escapeHtml(description)}"
+                    data-trailer-url="${escapeHtml(trailerUrl)}"
                     data-rating="${escapeHtml(rating)}"
                     data-cast="${escapeHtml(cast)}"
                     data-genres="${escapeHtml(genres)}"
                     data-this-movie-is="${escapeHtml(mood)}"
-                    data-time="${escapeHtml(runtime)}">
+                    data-time="${escapeHtml(runtime)}"
+                    data-showtimes='${escapeHtml(JSON.stringify(modalShowtimes))}'>
                     <span class="rating-overlay">${escapeHtml(rating)} / 5</span>
                     <button class="watch-flag ${inWatchlist ? "in-watchlist" : ""}" type="button"
                         data-title="${escapeHtml(title)}"

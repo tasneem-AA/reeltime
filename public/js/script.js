@@ -57,6 +57,54 @@ let TRAILER_URLS = {
   "The Running Man": "https://www.youtube.com/embed/KD18ddeFuyM",
 };
 
+function normalizeTrailerUrl(rawValue) {
+  if (!rawValue) return "";
+  if (rawValue.includes("youtube.com/embed/")) return rawValue;
+
+  let match = rawValue.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
+  if (match) {
+    return `https://www.youtube.com/embed/${match[1]}`;
+  }
+
+  if (/^[\w-]{11}$/.test(rawValue)) {
+    return `https://www.youtube.com/embed/${rawValue}`;
+  }
+
+  return rawValue;
+}
+
+function renderModalShowtimes(card) {
+  let showtimesContainer = document.getElementById("modal-showtimes");
+  if (!showtimesContainer) return;
+
+  let showtimesLabel = document.querySelector(".movieshowtime");
+  let rawShowtimes = card.dataset.showtimes || card.getAttribute("data-showtimes") || "[]";
+  let parsedShowtimes = [];
+
+  try {
+    parsedShowtimes = JSON.parse(rawShowtimes);
+  } catch (error) {
+    parsedShowtimes = [];
+  }
+
+  showtimesContainer.innerHTML = "";
+
+  if (!Array.isArray(parsedShowtimes) || !parsedShowtimes.length) {
+    if (showtimesLabel) showtimesLabel.style.display = "none";
+    showtimesContainer.style.display = "none";
+    return;
+  }
+
+  if (showtimesLabel) showtimesLabel.style.display = "";
+  showtimesContainer.style.display = "";
+
+  parsedShowtimes.forEach((showtime) => {
+    let pill = document.createElement("span");
+    pill.className = "showtime-pill";
+    pill.textContent = showtime;
+    showtimesContainer.appendChild(pill);
+  });
+}
 
 
 
@@ -233,18 +281,23 @@ function openMovieModal(cardElement) {
 
   let thisMovieIs = card.dataset.thisMovieIs || card.getAttribute('data-this-movie-is') || 'N/A';
 
-  let youtubeEmbedUrl = TRAILER_URLS[title] || '';
+  let trailerFromCard = card.dataset.trailerUrl || card.getAttribute('data-trailer-url') || '';
+  let youtubeEmbedUrl = normalizeTrailerUrl(trailerFromCard) || normalizeTrailerUrl(TRAILER_URLS[title] || '');
   if (modalTitle) modalTitle.textContent = title;
   if (modalText) modalText.textContent = text;
   if (modalCast) modalCast.textContent = cast;
   if (modalGenres) modalGenres.textContent = genres;
   if (modalThisMovieIs) modalThisMovieIs.textContent = thisMovieIs;
+  renderModalShowtimes(card);
   
   if (youtubeEmbedUrl && modalTrailer) {
     let params = "?autoplay=1&mute=1&rel=0&playsinline=1&modestbranding=1";
     modalTrailer.src = youtubeEmbedUrl + params;
     modalTrailer.style.display = 'block';
-  } 
+  } else if (modalTrailer) {
+    modalTrailer.src = '';
+    modalTrailer.style.display = 'none';
+  }
   
   renderCommentsForMovie(title);
   updateWatchlistButton(title);
