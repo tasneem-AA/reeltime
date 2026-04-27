@@ -1923,6 +1923,7 @@ body.login-open {
   width: 72px;
   height: 72px;
   object-fit: contain;
+  filter: invert(1);
   margin-bottom: 0.8rem;
 }
 
