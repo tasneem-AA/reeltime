@@ -1043,6 +1043,8 @@ function setupProfileSearch() {
         messageDiv.style.display = 'none';
 
         try {
+            let uploadedAvatarUrl = null;
+
             const infoResponse = await fetch('/api/user', {
                 method: 'PUT',
                 headers: {
@@ -1097,12 +1099,11 @@ function setupProfileSearch() {
                 if (!avatarData.success) {
                     throw new Error(avatarData.message || 'Failed to update profile image');
                 }
-                window.authUser.img = avatarData.profile_image;
-                sessionStorage.setItem('loggedInUser', JSON.stringify(window.authUser));
+                uploadedAvatarUrl = avatarData.profile_image;
             }
             window.authUser.username = infoData.user.username;
             window.authUser.email = infoData.user.email;
-            window.authUser.img = infoData.user.img;
+            window.authUser.img = uploadedAvatarUrl || infoData.user.img;
             sessionStorage.setItem('loggedInUser', JSON.stringify(window.authUser));
 
             const nameEl = document.querySelector('.profile-info-modern h1');
